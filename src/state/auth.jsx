@@ -92,7 +92,8 @@ export function AuthProvider({ children }) {
 
   const can = useCallback((perm) => {
     if (!currentUser) return false;
-    if (currentUser.role === 'owner') return true;
+    // صفحات الإدارة الأساسية تبقى متاحة دائماً للمالك حتى لا يُقفل نفسه
+    if (currentUser.role === 'owner' && (perm === 'dashboard' || perm === 'owner' || perm === 'users')) return true;
     return (currentUser.permissions || []).includes(perm);
   }, [currentUser]);
 

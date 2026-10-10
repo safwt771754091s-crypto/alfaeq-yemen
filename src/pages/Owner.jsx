@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { Card, SectionHeader, Field, StatCard, useToast } from '../components/UI.jsx';
+import PermissionsEditor from '../components/PermissionsEditor.jsx';
 import { useApp } from '../state/store.jsx';
-import { useAuth } from '../state/auth.jsx';
+import { useAuth, ALL_PERMISSIONS } from '../state/auth.jsx';
 
 function OwnerCard({ owner }) {
   return (
@@ -56,6 +57,12 @@ export default function Owner() {
   const toast = useToast();
   const [info, setInfo] = useState({ name: owner?.name || '', email: owner?.email || '', phone: owner?.phone || '', school: owner?.school || '' });
   const [pins, setPins] = useState({ cur: '', nw: '', nw2: '' });
+  const [perms, setPerms] = useState(owner?.permissions || []);
+
+  const savePerms = (next) => {
+    setPerms(next);
+    updateUser('owner', { permissions: next });
+  };
 
   const saveInfo = () => {
     updateUser('owner', info);
@@ -124,6 +131,24 @@ export default function Owner() {
               بيانات المالك وإدارة المنصة متاحة لصاحب حساب المالك فقط. أنت مسجّل حالياً كـ«{currentUser?.name || 'معلم'}».
             </p>
           </div>
+        </Card>
+      )}
+
+      {isOwner && (
+        <Card className="p-5">
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <div className="section-title"><Icon.Shield size={18} /> صلاحيات المالك</div>
+            <div className="flex items-center gap-2">
+              <span className="chip bg-brand-50 text-brand-700">{perms.length} / {ALL_PERMISSIONS.length} صلاحية</span>
+              <button className="btn-outline !px-3 !py-2 text-xs" onClick={() => savePerms(ALL_PERMISSIONS.slice())}>
+                <Icon.Check size={15} /> تفعيل الكل
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-slate-400 font-bold mb-4 leading-relaxed">
+            خصّص الصفحات التي تظهر في قائمتك. تبقى صفحات «لوحة التحكم»، «حساب المالك»، و«المستخدمون والصلاحيات» متاحة دائماً.
+          </p>
+          <PermissionsEditor value={perms} onChange={savePerms} />
         </Card>
       )}
 

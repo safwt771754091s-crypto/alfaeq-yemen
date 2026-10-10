@@ -1,43 +1,12 @@
 import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { Card, SectionHeader, Field, Modal, Confirm, useToast } from '../components/UI.jsx';
-import { useAuth, PERMISSION_GROUPS, ALL_PERMISSIONS, DEFAULT_TEACHER_PERMISSIONS, permissionLabel } from '../state/auth.jsx';
+import PermissionsEditor from '../components/PermissionsEditor.jsx';
+import { useAuth, ALL_PERMISSIONS, DEFAULT_TEACHER_PERMISSIONS, permissionLabel } from '../state/auth.jsx';
 import { formatDate } from '../lib/utils.js';
 
 const ROLE_LABELS = { owner: 'مالك المنصة', admin: 'مدير', teacher: 'معلم', viewer: 'مطّلع (قراءة فقط)' };
 const READONLY_PERMISSIONS = ['dashboard', 'curriculum', 'library', 'reports', 'activity', 'community', 'announcements', 'reminders', 'settings'];
-
-function PermissionsEditor({ value, onChange, disabled }) {
-  const toggle = (id) => {
-    if (disabled) return;
-    onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id]);
-  };
-  return (
-    <div className="space-y-3">
-      {PERMISSION_GROUPS.map((g) => (
-        <div key={g.group}>
-          <div className="text-[11px] font-extrabold text-slate-400 mb-1.5">{g.group}</div>
-          <div className="flex flex-wrap gap-2">
-            {g.items.map(([id, label]) => {
-              const on = value.includes(id);
-              return (
-                <button
-                  type="button"
-                  key={id}
-                  disabled={disabled}
-                  onClick={() => toggle(id)}
-                  className={`chip transition ${on ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-500'} ${disabled ? 'opacity-60' : ''}`}
-                >
-                  {on && <Icon.Check size={13} />} {label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function UserForm({ open, onClose, editing }) {
   const { addUser, updateUser, setPin } = useAuth();
