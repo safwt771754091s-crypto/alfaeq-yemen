@@ -132,7 +132,7 @@ unauthenticated users), and the React dashboard is the app.
 
 ## Daily logs
 - `2026-10-09.md` — built كراسة التحضير (notebook) + حساب المالك (owner account).
-- `2026-10-10.md` — reference-design restyle, secondary grade naming fix, offline
+- `2026-10-10.md` — sessions 1-12: reference-design restyle, grade naming, offline
   font bundling, Android APK build/ship (full steps).
 
 ## Environment quirks (learned)
