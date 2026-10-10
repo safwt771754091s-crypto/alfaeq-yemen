@@ -147,6 +147,27 @@ export default function Settings() {
           </Card>
           )}
 
+          {!isNative && (
+          <Card className="p-5">
+            <div className="section-title mb-4"><Icon.Send size={18} /> أرسل التطبيق إلى تلفون آخر</div>
+            <p className="text-sm text-slate-500 font-bold leading-relaxed mb-3">
+              صوّر رمز الاستجابة السريعة (QR) بكاميرا الجوال الآخر ليفتح رابط تنزيل التطبيق مباشرة، أو شارك الرابط.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <img src="./qr-android.png" alt="QR تنزيل تطبيق الأندرويد" width={160} height={160} className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white p-2" />
+              <div className="flex-1 w-full">
+                <input readOnly value={APK_URL} className="input w-full text-xs" onFocus={(e) => e.target.select()} />
+                <div className="flex gap-2 flex-wrap mt-2">
+                  <button className="btn-outline inline-flex" onClick={() => { navigator.clipboard?.writeText(APK_URL); toast('تم نسخ رابط التطبيق'); }}><Icon.Library size={18} /> نسخ الرابط</button>
+                  {navigator.share && (
+                    <button className="btn-outline inline-flex" onClick={() => navigator.share({ title: 'منصة المعلم الذكية', text: 'حمّل تطبيق منصة المعلم الذكية (يعمل بدون إنترنت)', url: APK_URL }).catch(() => {})}><Icon.Send size={18} /> مشاركة</button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Card>
+          )}
+
           <Card className="p-5">
             <div className="section-title mb-4"><Icon.Info size={18} /> حول المنصة</div>
             <div className="rounded-2xl bg-gradient-to-l from-brand-600 to-brand-700 text-white p-4">
