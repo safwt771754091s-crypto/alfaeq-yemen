@@ -537,7 +537,15 @@ export default function Landing({ onStart }) {
           </div>
           <div><b className="block text-white font-extrabold mb-2">المنصة</b><ul className="space-y-1.5 text-sm font-bold text-slate-400">{NAV_LINKS.map((l) => <li key={l.href}><a href={l.href} className="hover:text-white">{l.label}</a></li>)}</ul></div>
           <div><b className="block text-white font-extrabold mb-2">الأدوات</b><ul className="space-y-1.5 text-sm font-bold text-slate-400"><li>مولّد التحضير</li><li>حاسبة الدرجات</li><li>سجل الحضور</li><li>مولّد الشهادات</li></ul></div>
-          <div><b className="block text-white font-extrabold mb-2">الدعم</b><ul className="space-y-1.5 text-sm font-bold text-slate-400"><li><a href="#faq" className="hover:text-white">الأسئلة الشائعة</a></li><li><a href="#contact" className="hover:text-white">تواصل معنا</a></li><li><a href="#curriculum" className="hover:text-white">المنهج اليمني</a></li></ul><button onClick={onStart} className="btn-sand mt-3 !py-2 text-xs">دخول المنصة</button></div>
+          <div>
+            <b className="block text-white font-extrabold mb-2">المالك</b>
+            <ul className="space-y-1.5 text-sm font-bold text-slate-400">
+              <li>مالك منصة المعلم الذكية</li>
+              <li><a href="mailto:Safwt771754091s@gmail.com" dir="ltr" className="hover:text-white">📧 Safwt771754091s@gmail.com</a></li>
+              <li><a href="https://wa.me/967783488282" target="_blank" rel="noreferrer" dir="ltr" className="hover:text-white">📱 +967 783488 282</a></li>
+            </ul>
+            <button onClick={onStart} className="btn-sand mt-3 !py-2 text-xs">دخول المنصة</button>
+          </div>
         </div>
         <div className="border-t border-white/10 py-4 text-center text-xs text-slate-500 font-bold">
           © 2026 منصة المعلم الذكية — جميع الحقوق محفوظة • صُنع بحب لمعلمي اليمن 🇾🇪
