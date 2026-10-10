@@ -7,9 +7,10 @@ const OWNER_NAME = 'صفوت محمد عبدالعزيز البريهي';
 
 const NAV_LINKS = [
   { href: '#features', label: 'المميزات' },
+  { href: '#workflow', label: 'دورة العمل' },
   { href: '#tools', label: 'الأدوات' },
+  { href: '#studio', label: 'الألعاب والتصميم' },
   { href: '#curriculum', label: 'المنهج اليمني' },
-  { href: '#testimonials', label: 'آراء المعلمين' },
   { href: '#faq', label: 'الأسئلة' },
   { href: '#contact', label: 'تواصل' }
 ];
@@ -55,6 +56,14 @@ const FAQ = [
   { q: 'كيف أبدأ؟', a: 'اضغط «ابدأ الآن مجاناً» وأنشئ حسابك (معلم جديد)، أو ادخل بحساب المالك لإكمال الإعداد الأولي، ثم اختر أداة وابدأ فوراً.' }
 ];
 
+// دورة عمل المعلم: من التحضير إلى التصحيح والسجلات
+const WORKFLOW = [
+  { n: '١', icon: '📝', title: 'التحضير الذكي', text: 'أدخل المادة والصف وعنوان الدرس والزمن، واحصل على تحضير متكامل: الأهداف، التمهيد، العناصر، استراتيجيات التدريس، والتقويم.' },
+  { n: '٢', icon: '🎬', title: 'العروض التقديمية', text: 'ولّد عرضاً مقسّماً إلى شرائح من شريحة العنوان حتى الخاتمة، جاهزاً للعرض أو التصدير (Markdown / PowerPoint).' },
+  { n: '٣', icon: '✅', title: 'التصحيح الذكي', text: 'أدخل نموذج الإجابة والأسئلة (اختيار من متعدد، صح وخطأ، مقالي قصير)، ورصد الدرجات آلياً مع تحليل الأخطاء واقتراح أنشطة علاجية.' },
+  { n: '٤', icon: '📋', title: 'السجلات والشهادات', text: 'سجل درجات آلي بالمجاميع والنسب والتقديرات، حضور يومي بإحصاءات، ومولّد شهادات قابل للتعديل والطباعة بالأسماء.' }
+];
+
 function gradeLabel(total) {
   if (total >= 90) return { label: 'ممتاز', color: 'text-emerald-600' };
   if (total >= 80) return { label: 'جيد جداً', color: 'text-teal-600' };
@@ -90,6 +99,13 @@ export default function Landing({ onStart }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [tab, setTab] = useState('lesson');
   const [faqOpen, setFaqOpen] = useState(0);
+  const [showTop, setShowTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 500);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const [les, setLes] = useState({ title: '', subject: 'math', grade: 5, duration: 45 });
   const [lesson, setLesson] = useState(null);
@@ -244,6 +260,29 @@ export default function Landing({ onStart }) {
         </div>
       </section>
 
+      {/* Workflow — من التحضير إلى السجلات */}
+      <section id="workflow" className="py-14 sm:py-20 bg-gradient-to-b from-navy-900 to-brand-800 text-white">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="text-xs font-extrabold text-sand-300">🧭 دورة عملك مع المعلم الذكي</span>
+            <h2 className="mt-2 text-2xl sm:text-3xl font-extrabold">من التحضير حتى التصحيح والسجلات — بأربع خطوات</h2>
+            <p className="mt-3 text-white/75 font-bold">أدوات مترابطة تغطي يومك التعليمي كاملاً، وتعمل جميعها دون إنترنت.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {WORKFLOW.map((s) => (
+              <div key={s.n} className="rounded-2xl bg-white/10 ring-1 ring-white/15 p-5 backdrop-blur">
+                <div className="flex items-center gap-3">
+                  <span className="grid place-items-center w-11 h-11 rounded-2xl bg-sand-500 text-white text-xl">{s.icon}</span>
+                  <span className="text-3xl font-extrabold text-white/20">{s.n}</span>
+                </div>
+                <h3 className="mt-3 font-extrabold">{s.title}</h3>
+                <p className="mt-1.5 text-sm text-white/75 font-bold leading-relaxed">{s.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Tools */}
       <section id="tools" className="py-14 sm:py-20 bg-gradient-to-b from-brand-50/60 to-transparent dark:from-white/5">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -332,6 +371,61 @@ export default function Landing({ onStart }) {
                 <button onClick={printCert} className="btn-sand mt-4 no-print"><Icon.Print size={18} /> 🖨️ معاينة وطباعة الشهادة</button>
               </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Studio + Games showcase */}
+      <section id="studio" className="py-14 sm:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="text-xs font-extrabold text-brand-700 dark:text-brand-300">🎨 استوديو التصميم والألعاب</span>
+            <h2 className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">أبدع في الأنشطة وعلّم بالتسلية</h2>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Design studio showcase */}
+            <div className="card p-6 sm:p-8 flex flex-col">
+              <div className="flex items-center gap-3">
+                <span className="grid place-items-center w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white text-2xl">🎨</span>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-800 dark:text-white">استوديو التصميم التعليمي</h3>
+                  <p className="text-xs text-slate-400 font-bold">قوالب جاهزة قابلة للتعديل والطباعة</p>
+                </div>
+              </div>
+              <div className="mt-4 rounded-2xl border-4 border-double border-brand-700 bg-white p-5 text-center">
+                <div className="text-lg font-extrabold text-brand-700">🏅 شهادة تفوق وتقدير</div>
+                <div className="w-16 h-1 bg-sand-500 mx-auto my-2 rounded-full" />
+                <div className="text-base font-extrabold text-sand-600">اسم الطالب هنا</div>
+                <div className="text-[11px] text-slate-400 font-bold mt-1">اسم المدرسة — التاريخ</div>
+              </div>
+              <ul className="mt-4 grid sm:grid-cols-2 gap-2">
+                {['شهادات تفوق وتقدير', 'بطاقات تشجيع', 'ملصقات وإعلانات', 'ترويسات أوراق عمل'].map((x) => (
+                  <li key={x} className="flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300"><Icon.Check size={15} className="text-brand-600" />{x}</li>
+                ))}
+              </ul>
+              <p className="mt-4 text-xs text-slate-400 font-bold">عدّل الألوان والنصوص ثم اطبع أو صدّر صورة PNG / HTML جاهزة للاستخدام.</p>
+            </div>
+
+            {/* Math games teaser */}
+            <div className="card p-6 sm:p-8 flex flex-col bg-gradient-to-br from-sand-50 to-white dark:from-white/5 dark:to-transparent">
+              <div className="flex items-center gap-3">
+                <span className="grid place-items-center w-12 h-12 rounded-2xl bg-gradient-to-br from-sand-500 to-sand-600 text-white text-2xl">🎮</span>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-800 dark:text-white">ألعاب الرياضيات التفاعلية</h3>
+                  <p className="text-xs text-slate-400 font-bold">ستّ ألعاب لتقوية الحساب الذهني</p>
+                </div>
+              </div>
+              <div className="mt-5 grid grid-cols-3 gap-3">
+                {[['⚡', 'اختبار سريع'], ['⏱️', 'سباق الوقت'], ['✅', 'صح وخطأ'], ['✏️', 'اكتب الإجابة'], ['🔗', 'المطابقة'], ['🔢', 'الترتيب']].map((g) => (
+                  <div key={g[1]} className="rounded-2xl bg-white p-3 text-center shadow-sm dark:bg-navy-800">
+                    <div className="text-2xl">{g[0]}</div>
+                    <div className="mt-1 text-[11px] font-extrabold text-slate-600 dark:text-slate-300">{g[1]}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400 font-bold leading-relaxed">اعرضها على شاشة الصف أو دع الطلاب يلعبون — مع لوحة نقاط، صوت، مراجعة الإجابات، وحفظ لأفضل نتيجة.</p>
+              <button onClick={onStart} className="btn-sand mt-5 self-start"><Icon.Gamepad size={18} /> جرّب الألعاب داخل المنصة</button>
+            </div>
           </div>
         </div>
       </section>
@@ -450,6 +544,17 @@ export default function Landing({ onStart }) {
           © 2026 منصة المعلم الذكية — جميع الحقوق محفوظة • صُنع بحب لمعلمي اليمن 🇾🇪
         </div>
       </footer>
+
+      {showTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-5 left-5 z-40 grid place-items-center w-12 h-12 rounded-full bg-brand-700 text-white shadow-lg hover:bg-brand-800 transition no-print"
+          aria-label="أعلى الصفحة"
+          title="أعلى الصفحة"
+        >
+          <Icon.ChevronDown size={22} className="rotate-180" />
+        </button>
+      )}
     </div>
   );
 }
