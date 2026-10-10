@@ -37,6 +37,32 @@ jobs:
           "$SDKMGR" "platform-tools" "platforms;android-34" "build-tools;34.0.0" >/dev/null 2>&1 || true
           echo "sdk.dir=$SDK" > android/local.properties
 
+      # مفتاح التوقيع: إن وُجد سرّ ANDROID_KEYSTORE_BASE64 نستخدمه (توقيع ثابت)،
+      # وإلا نولّد مفتاحاً مؤقتاً حتى لا يفشل البناء أبداً.
+      - name: Provide signing keystore
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PW: ${{ secrets.KEYSTORE_PASSWORD }}
+          K_ALIAS: ${{ secrets.KEY_ALIAS }}
+          K_PW: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -e
+          KS="android/app/alfaeq-teacher.keystore"
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$KS"
+            echo "KEYSTORE_PASSWORD=${KS_PW:-teacher123}" >> "$GITHUB_ENV"
+            echo "KEY_ALIAS=${K_ALIAS:-teacher}" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=${K_PW:-teacher123}" >> "$GITHUB_ENV"
+            echo "Keystore: restored from secret (stable signing)."
+          else
+            keytool -genkeypair -v -keystore "$KS" -alias teacher \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass teacher123 -keypass teacher123 \
+              -dname "CN=Smart Teacher, OU=Education, O=Alfaeq, L=Sanaa, C=YE"
+            echo "Keystore: generated a throwaway key (signing is NOT stable across builds)."
+            echo "→ add repo secret ANDROID_KEYSTORE_BASE64 for stable updates."
+          fi
+
       - run: npm ci
       - run: npm run build
       - run: npx cap sync android

@@ -18,17 +18,24 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('alfaeq-teacher.keystore')
-            storePassword System.getenv('KEYSTORE_PASSWORD') ?: 'teacher123'
-            keyAlias System.getenv('KEY_ALIAS') ?: 'teacher'
-            keyPassword System.getenv('KEY_PASSWORD') ?: 'teacher123'
+            // في الـCI نولّد المفتاح أو نفكّ السرّ إلى هذا المسار قبل البناء.
+            // إن لم يوجد الملف (بناء محلي بدون توقيع) نرجع للتوقيع الافتراضي.
+            def ksFile = file('alfaeq-teacher.keystore')
+            if (ksFile.exists()) {
+                storeFile ksFile
+                storePassword System.getenv('KEYSTORE_PASSWORD') ?: 'teacher123'
+                keyAlias System.getenv('KEY_ALIAS') ?: 'teacher'
+                keyPassword System.getenv('KEY_PASSWORD') ?: 'teacher123'
+            }
         }
     }
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
-            signingConfig signingConfigs.release
+            if (file('alfaeq-teacher.keystore').exists()) {
+                signingConfig signingConfigs.release
+            }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
