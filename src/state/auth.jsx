@@ -5,7 +5,7 @@ const AuthContext = createContext(null);
 
 const USERS_KEY = 'users';
 const SESSION_KEY = 'smart_teacher_v1:auth_session';
-export const APP_VERSION = '1.4';
+export const APP_VERSION = '1.5';
 
 // ===== حساب المالك الثابت — موجود دائماً في المنصة ولا يمكن حذفه =====
 export const OWNER = {
