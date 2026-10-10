@@ -175,23 +175,23 @@ export default function Landing({ onStart }) {
       </header>
 
       {/* Hero */}
-      <section id="home" className="relative overflow-hidden">
-        <span className="pointer-events-none absolute -top-24 -left-16 w-96 h-96 rounded-full bg-brand-300/25 blur-3xl" />
-        <span className="pointer-events-none absolute top-10 -right-20 w-80 h-80 rounded-full bg-sand-300/25 blur-3xl" />
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12 lg:py-20 grid lg:grid-cols-2 gap-10 items-center relative">
+      <section id="home" className="relative overflow-hidden bg-hero-gradient text-white">
+        <span className="pointer-events-none absolute -top-24 -left-16 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
+        <span className="pointer-events-none absolute -bottom-24 right-0 w-80 h-80 rounded-full bg-sand-400/20 blur-3xl" />
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16 lg:py-24 min-h-[70vh] lg:min-h-[88vh] grid lg:grid-cols-2 gap-10 items-center relative">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-sand-50 text-sand-800 ring-1 ring-sand-200 px-4 py-1.5 text-xs font-extrabold dark:bg-white/5 dark:text-sand-300 dark:ring-white/10">🇾🇪 صُنع خصيصاً لمعلم اليمن</span>
-            <h1 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-slate-900 dark:text-white">
-              منصة <span className="bg-gradient-to-l from-brand-600 to-brand-800 bg-clip-text text-transparent">المعلم اليمني</span> الذكية<br />كل أدواتك في مكان واحد
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/15 ring-1 ring-white/25 px-4 py-1.5 text-xs font-extrabold backdrop-blur">🇾🇪 صُنع خصيصاً لمعلم اليمن</span>
+            <h1 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">
+              منصة <span className="text-sand-400">المعلم اليمني</span> الذكية<br />كل أدواتك في مكان واحد
             </h1>
-            <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300 font-bold leading-relaxed">
+            <p className="mt-4 text-base sm:text-lg text-white/85 font-bold leading-relaxed">
               حضّر دروسك، ولّد عروضك التقديمية، صحّح اختباراتك، وسجّل الدرجات والحضور والشهادات بضغطة زر — بواجهة عربية أنيقة تعمل على الجوال والحاسوب، ومتوافقة مع المنهج اليمني.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <button onClick={onStart} className="btn-primary !py-3"><Icon.Sparkles size={18} /> 🛠️ جرّب الأدوات الآن</button>
-              <a href="#curriculum" className="btn-outline !py-3">📚 استكشف المنهج اليمني</a>
+              <button onClick={onStart} className="btn bg-gradient-to-br from-sand-500 to-sand-600 text-white hover:from-sand-600 hover:to-sand-700 shadow-lg !py-3">🛠️ جرّب الأدوات الآن</button>
+              <a href="#curriculum" className="btn border border-white/30 bg-white/10 text-white hover:bg-white/20 !py-3">📚 استكشف المنهج اليمني</a>
             </div>
-            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-slate-500 dark:text-slate-400">
+            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-white/80">
               <span className="inline-flex items-center gap-1.5">⚡ بدون تسجيل معقّد</span>
               <span className="inline-flex items-center gap-1.5">🔒 بياناتك محفوظة في جهازك</span>
               <span className="inline-flex items-center gap-1.5">📱 يعمل على الجوال</span>
@@ -199,7 +199,7 @@ export default function Landing({ onStart }) {
           </div>
           {/* Mock window */}
           <div className="relative">
-            <div className="rounded-3xl border border-white/40 bg-white/80 backdrop-blur shadow-xl p-4 dark:bg-white/5 dark:border-white/10">
+            <div className="rounded-3xl border border-white/60 bg-white/85 backdrop-blur-xl shadow-2xl p-4">
               <div className="flex gap-1.5 mb-3">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
@@ -211,20 +211,20 @@ export default function Landing({ onStart }) {
                 { i: '🗓️', t: 'الحضور والغياب — اليوم', s: 'حاضر 29 | غائب 3', w: '90%' },
                 { i: '🏆', t: 'شهادة تفوق — جاهزة للطباعة', s: 'توليد تلقائي بالاسم', w: '100%' }
               ].map((r) => (
-                <div key={r.t} className="flex items-center gap-3 rounded-2xl bg-white p-3 mb-2 shadow-sm dark:bg-navy-800">
+                <div key={r.t} className="flex items-center gap-3 rounded-2xl bg-white p-3 mb-2 shadow-sm last:mb-0">
                   <span className="grid place-items-center w-9 h-9 rounded-xl bg-brand-50 text-lg">{r.i}</span>
                   <div className="min-w-0 grow">
-                    <b className="block text-[13px] text-slate-800 truncate dark:text-white">{r.t}</b>
+                    <b className="block text-[13px] text-slate-800 truncate">{r.t}</b>
                     <small className="block text-[11px] text-slate-400 font-bold truncate">{r.s}</small>
                     <div className="mt-1.5 h-1.5 rounded-full bg-slate-100 overflow-hidden"><i className="block h-full rounded-full bg-gradient-to-l from-brand-500 to-brand-700" style={{ width: r.w }} /></div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="absolute -bottom-4 right-2 rounded-2xl bg-white shadow-lg px-3 py-2 flex items-center gap-2 dark:bg-navy-800">
-              <span className="text-xl">📚</span><div className="leading-tight"><b className="text-sm text-brand-700 dark:text-brand-300">+120</b><small className="block text-[10px] text-slate-400 font-bold">نموذج جاهز</small></div>
+            <div className="absolute -bottom-4 right-2 rounded-2xl bg-white shadow-lg px-3 py-2 flex items-center gap-2 animate-float" style={{ animationDelay: '0.6s' }}>
+              <span className="text-xl">📚</span><div className="leading-tight"><b className="text-sm text-brand-700">+120</b><small className="block text-[10px] text-slate-400 font-bold">نموذج جاهز</small></div>
             </div>
-            <div className="absolute -top-4 left-2 rounded-2xl bg-white shadow-lg px-3 py-2 flex items-center gap-2 dark:bg-navy-800">
+            <div className="absolute -top-4 left-2 rounded-2xl bg-white shadow-lg px-3 py-2 flex items-center gap-2 animate-float">
               <span className="text-xl">⏱️</span><div className="leading-tight"><b className="text-sm text-sand-600">5 دقائق</b><small className="block text-[10px] text-slate-400 font-bold">لتجهيز درسك</small></div>
             </div>
           </div>
@@ -232,10 +232,10 @@ export default function Landing({ onStart }) {
       </section>
 
       {/* Stats */}
-      <section className="bg-gradient-to-l from-navy-900 to-brand-800 text-white">
+      <section className="bg-white border-b border-slate-200 dark:bg-navy-900 dark:border-white/10">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[['+12,000', 'معلم يمني'], ['+35,000', 'درس محضَّر'], ['+480', 'مدرسة مشاركة'], ['98%', 'رضا المعلمين']].map((s) => (
-            <div key={s[1]}><div className="text-2xl sm:text-3xl font-extrabold">{s[0]}</div><div className="text-xs sm:text-sm text-white/75 font-bold mt-1">{s[1]}</div></div>
+            <div key={s[1]}><div className="text-2xl sm:text-3xl font-extrabold text-brand-700 dark:text-brand-300">{s[0]}</div><div className="text-xs sm:text-sm text-slate-500 font-bold mt-1">{s[1]}</div></div>
           ))}
         </div>
       </section>
