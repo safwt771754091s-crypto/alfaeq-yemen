@@ -236,14 +236,14 @@ export default function App() {
         </nav>
 
         <div className="p-3 border-t border-slate-100 space-y-2">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition text-right" onClick={() => go('profile')}>
+          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition text-right" onClick={() => go(isOwner ? 'owner' : 'profile')}>
             <span className={`grid place-items-center w-10 h-10 rounded-full text-white font-extrabold shrink-0 ${isOwner ? 'bg-gradient-to-br from-sand-500 to-sand-600' : 'bg-gradient-to-br from-brand-500 to-brand-700'}`}>
-              {(currentUser?.name || 'م').slice(0, 1)}
+              {isOwner ? <Icon.Crown size={20} /> : (currentUser?.name || 'م').slice(0, 1)}
             </span>
             <div className="min-w-0">
-              <div className="font-extrabold text-slate-800 text-sm truncate">{currentUser?.name || 'المعلم'}</div>
+              <div className="font-extrabold text-slate-800 text-sm truncate">{isOwner ? 'مالك المنصة' : (currentUser?.name || 'المعلم')}</div>
               <div className="text-[11px] text-slate-400 font-bold flex items-center gap-1">
-                <Icon.Shield size={12} /> {currentUser?.roleLabel || 'معلم'}
+                <Icon.Shield size={12} /> {isOwner ? 'حساب ثابت' : (currentUser?.roleLabel || 'معلم')}
               </div>
             </div>
             <Icon.Edit size={16} className="mr-auto text-slate-300" />
@@ -298,7 +298,7 @@ export default function App() {
                 {NAV.find((n) => n.id === route)?.name || 'الرئيسية'}
               </h1>
               <p className="text-[11px] sm:text-xs text-slate-400 font-bold truncate">
-                {currentUser?.name ? `أ. ${currentUser.name}` : 'منصة المعلم الذكية'}
+                {isOwner ? 'مالك المنصة' : (currentUser?.name ? `أ. ${currentUser.name}` : 'منصة المعلم الذكية')}
               </p>
             </div>
             <div className="mr-auto flex items-center gap-2">

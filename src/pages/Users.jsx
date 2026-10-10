@@ -176,11 +176,11 @@ export default function Users() {
           {users.map((u) => (
             <div key={u.id} className="flex items-center gap-3 p-3 flex-wrap">
               <span className={`grid place-items-center w-11 h-11 rounded-2xl text-white font-extrabold shrink-0 ${u.role === 'owner' ? 'bg-gradient-to-br from-sand-500 to-sand-600' : 'bg-gradient-to-br from-brand-500 to-brand-700'}`}>
-                {(u.name || 'م').slice(0, 1)}
+                {((u.role === 'owner' ? u.username : u.name) || 'م').slice(0, 1).toUpperCase()}
               </span>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-extrabold text-slate-800">{u.name}</span>
+                  <span className="font-extrabold text-slate-800" dir={u.role === 'owner' ? 'ltr' : 'rtl'}>{u.role === 'owner' ? `@${u.username}` : u.name}</span>
                   <span className={`chip ${u.role === 'owner' ? 'bg-sand-50 text-sand-700' : 'bg-brand-50 text-brand-700'}`}>
                     {u.role === 'owner' && <Icon.Crown size={13} />} {u.roleLabel}
                   </span>

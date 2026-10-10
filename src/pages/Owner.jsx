@@ -14,13 +14,12 @@ function OwnerCard({ owner }) {
         </span>
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800">{owner.name}</h2>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800" dir="ltr">@{owner.username}</h2>
             <span className="chip bg-sand-50 text-sand-700"><Icon.Shield size={14} /> {owner.roleLabel}</span>
             <span className="chip bg-slate-100 text-slate-500">حساب ثابت</span>
           </div>
           <div className="text-sm text-slate-500 font-bold mt-1">
-            اسم المستخدم: <span dir="ltr">{owner.username}</span>
-            {owner.email ? ` • ${owner.email}` : ''}{owner.phone ? ` • ${owner.phone}` : ''}
+            {owner.school ? `المدرسة / الجهة: ${owner.school}` : 'الحساب الرئيسي الثابت للمنصة'}
           </div>
           <div className="text-xs text-slate-400 font-bold mt-0.5">
             مالك منصة المعلم الذكية — هذا الحساب موجود دائماً ولا يمكن حذفه
@@ -160,7 +159,7 @@ export default function Owner() {
         <div className="flex flex-wrap gap-2">
           {users.map((u) => (
             <span key={u.id} className={`chip ${u.role === 'owner' ? 'bg-sand-50 text-sand-700' : 'bg-brand-50 text-brand-700'}`}>
-              {u.role === 'owner' && <Icon.Crown size={13} />} {u.name}
+              {u.role === 'owner' && <Icon.Crown size={13} />} {u.role === 'owner' ? `@${u.username}` : u.name}
             </span>
           ))}
         </div>

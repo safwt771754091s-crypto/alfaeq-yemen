@@ -11,7 +11,7 @@ export const APP_VERSION = '1.1';
 export const OWNER = {
   id: 'owner',
   login: 'safwt',
-  name: 'صفوت محمد عبدالعزيز البريهي',
+  name: 'مالك المنصة',
   role: 'owner',
   roleLabel: 'مالك المنصة',
   defaultPin: 'safwt'

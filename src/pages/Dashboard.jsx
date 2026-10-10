@@ -7,8 +7,9 @@ import { estimateLabel, PASS_MARK } from '../data/curriculum.js';
 
 export default function Dashboard({ go }) {
   const { profile, classes, students, lessons, notebooks, presentations, quizzes, assessments, certificates, activity } = useApp();
-  const { currentUser } = useAuth();
+  const { currentUser, isOwner } = useAuth();
   const displayName = currentUser?.name || profile.name;
+  const greetName = isOwner ? 'مالك المنصة' : displayName;
 
   const quick = [
     { id: 'planner', name: 'تحضير درس', icon: Icon.Sparkles, desc: 'توليد تحضير احترافي', tone: 'bg-brand-600' },
@@ -48,7 +49,7 @@ export default function Dashboard({ go }) {
           <div className="grow">
             <span className="chip bg-white/15 text-white/95 mb-2">🇾🇪 صُنع خصيصاً لمعلم اليمن</span>
             <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight">
-              أهلاً بك{displayName ? ` أ. ${displayName}` : ''} 👋
+              أهلاً بك{greetName ? ` ${isOwner ? '' : 'أ. '}${greetName}` : ''} 👋
             </h2>
             <p className="text-white/85 font-bold mt-1.5 max-w-2xl">
               منصة المعلم الذكية — نظّم تحضيرك، وولّد عروضك، وصحّح وسجّل بذكاء، بواجهة عربية أنيقة متوافقة مع المنهج اليمني.
