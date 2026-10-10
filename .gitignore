@@ -21,3 +21,8 @@ dist/*.apk
 *.apk
 *.keystore
 *.jks
+
+# docs/ is a committed production build served by GitHub Pages / jsDelivr,
+# but never carry the APK or its QR inside the site build.
+docs/*.apk
+docs/qr-android.png

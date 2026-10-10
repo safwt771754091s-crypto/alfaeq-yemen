@@ -5,6 +5,8 @@ import { useApp } from '../state/store.jsx';
 import { SUBJECTS } from '../data/curriculum.js';
 import { download } from '../lib/utils.js';
 
+const APK_URL = 'https://github.com/safwt771754091s-crypto/alfaeq-yemen/releases/latest/download/smart-teacher.apk';
+
 export default function Settings() {
   const { profile, saveProfile, backup, restore, wipe, classes, students, lessons, notebooks, presentations, quizzes, assessments, certificates } = useApp();
   const toast = useToast();
@@ -118,7 +120,7 @@ export default function Settings() {
             <p className="text-sm text-slate-500 font-bold leading-relaxed mb-3">
               نزّل تطبيق المنصة على جوالك واعمل به دون إنترنت. بعد التنزيل افتح الملف ثم اسمح بـ«تثبيت من هذا المصدر».
             </p>
-            <a className="btn-primary inline-flex" href="./smart-teacher.apk" download="منصة-المعلم-الذكية.apk">
+            <a className="btn-primary inline-flex" href={APK_URL} target="_blank" rel="noreferrer">
               <Icon.Download size={18} /> تنزيل تطبيق الأندرويد (APK)
             </a>
             <p className="text-xs text-slate-400 font-bold mt-2">الإصدار 1.0 — أندرويد 5.1 فأحدث — الحجم ~3 م.ب</p>
