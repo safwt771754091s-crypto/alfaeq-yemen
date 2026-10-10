@@ -23,7 +23,8 @@ const KEYS = {
   messages: 'messages',
   training: 'training',
   announcements: 'announcements',
-  followups: 'followups'
+  followups: 'followups',
+  games: 'games'
 };
 
 const DEFAULT_PROFILE = {
@@ -91,6 +92,7 @@ export function AppProvider({ children }) {
   const training = useCollection(KEYS.training, logActivity, 'دورة تدريبية');
   const announcements = useCollection(KEYS.announcements, logActivity, 'إعلان');
   const followups = useCollection(KEYS.followups, logActivity, 'متابعة');
+  const games = useCollection(KEYS.games, logActivity, 'نتيجة لعبة');
 
 
   // ===== الملف الشخصي =====
@@ -282,7 +284,7 @@ export function AppProvider({ children }) {
     attendance, setAttendanceStatus, markAllAttendance,
     certificates, addCertificate, deleteCertificate,
     activity, logActivity,
-    library, designs, timetable, reminders, community, messages, training, announcements, followups,
+    library, designs, timetable, reminders, community, messages, training, announcements, followups, games,
     backup, restore, wipe
   }), [
     profile, saveProfile, classes, addClass, updateClass, deleteClass,
@@ -295,7 +297,7 @@ export function AppProvider({ children }) {
     attendance, setAttendanceStatus, markAllAttendance,
     certificates, addCertificate, deleteCertificate,
     activity, logActivity,
-    library, designs, timetable, reminders, community, messages, training, announcements, followups,
+    library, designs, timetable, reminders, community, messages, training, announcements, followups, games,
     backup, restore, wipe
   ]);
 

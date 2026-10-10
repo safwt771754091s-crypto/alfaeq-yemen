@@ -26,8 +26,9 @@ fonts **Cairo + Tajawal**, gradient hero (`--hero-gradient`), rounded cards,
 soft teal shadows. We mirrored it with Yemeni branding: Tailwind `brand` scale
 is now teal (700=#0f766e), `sand` is amber, added `navy`, `bg-hero-gradient`,
 `bg-brand-gradient`, `bg-gold-gradient`, `animate-float`. Reference markup uses
-`app.html` for the tool dashboard and `index.html` for a landing page — our
-React app is the dashboard, and `Onboarding.jsx` is our landing.
+`app.html` for the tool dashboard and `index.html` for a landing page — we now
+mirror both: `src/pages/Landing.jsx` is the marketing landing (rendered first for
+unauthenticated users), and the React dashboard is the app.
 
 ## Architecture
 - `src/data/curriculum.js` — Yemeni curriculum: stages, GRADES(1-12), SUBJECTS,

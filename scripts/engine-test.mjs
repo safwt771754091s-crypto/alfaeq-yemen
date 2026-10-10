@@ -125,5 +125,26 @@ ok(hashPin('1234', saltA) !== hashPin('1234', saltB), 'الملح يغيّر ا�
 ok(hashPin('1234', saltA) !== hashPin('4321', saltA), 'الرمز الخاطئ لا يطابق');
 ok(hashPin('1234', saltA).length > 0, 'ناتج التلبيد غير فارغ');
 
+// --- بنك أسئلة ألعاب الرياضيات ---
+import { pool, metaOf, GAME_META, GRADE_BANDS, ALL_TYPES } from '../src/lib/mathBank.js';
+ok(GAME_META.length === 6, 'ستة أنواع ألعاب');
+ok(GRADE_BANDS.length === 4, 'أربع مراحل دراسية للألعاب');
+for (const b of GRADE_BANDS) {
+  const mc = pool(b.id, 'mc', 'medium');
+  ok(mc.length >= 10, `أسئلة اختيار كافية — ${b.id}`);
+  ok(mc.every((it) => it.t === 'mc' && it.choices.length === 4 && it.a >= 0 && it.a < 4), `صحة أسئلة الاختيار — ${b.id}`);
+  const tf = pool(b.id, 'tf', 'medium');
+  ok(tf.length >= 8 && tf.every((it) => typeof it.a === 'boolean'), `أسئلة صح/خطأ — ${b.id}`);
+  const num = pool(b.id, 'num', 'easy');
+  ok(num.length >= 8 && num.every((it) => typeof it.a === 'number'), `أسئلة إدخال رقمي — ${b.id}`);
+  const pr = pool(b.id, 'pairs', 'medium');
+  ok(pr.length >= 1 && pr.every((r) => r.pairs.length === 4), `جولات المطابقة — ${b.id}`);
+  const ord = pool(b.id, 'order', 'medium');
+  ok(ord.length >= 1 && ord.every((r) => r.values.length >= 4), `جولات الترتيب — ${b.id}`);
+}
+ok(ALL_TYPES.length === 5, 'خمسة أنواع أسئلة');
+ok(metaOf('arcade').timed === 60, 'سباق الوقت ٦٠ ثانية');
+ok(metaOf('quiz').id === 'quiz', 'استرجاع بيانات اللعبة');
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

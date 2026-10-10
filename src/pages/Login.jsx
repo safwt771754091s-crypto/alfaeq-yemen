@@ -61,7 +61,7 @@ function RegisterForm({ onBack }) {
   );
 }
 
-export default function Login({ allowRegister = true }) {
+export default function Login({ allowRegister = true, onHome }) {
   const { login } = useAuth();
   const toast = useToast();
   const [f, setF] = useState({ username: '', pin: '' });
@@ -80,6 +80,15 @@ export default function Login({ allowRegister = true }) {
       <div className="absolute inset-0 bg-hero-gradient" />
       <span className="absolute -top-24 -right-16 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
       <span className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-brand-300/20 blur-3xl" />
+
+      {onHome && (
+        <button
+          onClick={onHome}
+          className="absolute top-5 right-5 z-10 inline-flex items-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 text-white px-4 py-2 text-sm font-extrabold ring-1 ring-white/25 transition"
+        >
+          <Icon.ChevronRight size={16} /> الرئيسية
+        </button>
+      )}
 
       <div className="relative w-full max-w-md">
         <div className="text-center text-white mb-5">
@@ -116,6 +125,12 @@ export default function Login({ allowRegister = true }) {
                   <Icon.Plus size={18} /> معلم جديد؟ أنشئ حساباً
                 </button>
               )}
+            </>
+          ) : (
+            <>
+              <h2 className="text-xl font-extrabold text-slate-800 mb-1">إنشاء حساب معلم</h2>
+              <p className="text-xs text-slate-400 font-bold mb-4">حساب مستقل على هذا الجهاز، تُحفظ بياناته محلياً</p>
+              <RegisterForm onBack={() => setMode('login')} />
 
               <div className="mt-4 rounded-2xl bg-sand-50 p-3.5 flex items-start gap-2.5">
                 <Icon.Crown size={18} className="text-sand-600 shrink-0 mt-0.5" />
@@ -124,12 +139,6 @@ export default function Login({ allowRegister = true }) {
                   رمز الدخول الافتراضي <b dir="ltr">{OWNER.defaultPin}</b> (يُغيّر من حساب المالك).
                 </p>
               </div>
-            </>
-          ) : (
-            <>
-              <h2 className="text-xl font-extrabold text-slate-800 mb-1">إنشاء حساب معلم</h2>
-              <p className="text-xs text-slate-400 font-bold mb-4">حساب مستقل على هذا الجهاز، تُحفظ بياناته محلياً</p>
-              <RegisterForm onBack={() => setMode('login')} />
             </>
           )}
         </div>

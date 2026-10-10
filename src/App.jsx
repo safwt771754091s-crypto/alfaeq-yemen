@@ -3,6 +3,7 @@ import Icon from './components/Icon.jsx';
 import { useApp } from './state/store.jsx';
 import { useAuth } from './state/auth.jsx';
 import Login from './pages/Login.jsx';
+import Landing from './pages/Landing.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Curriculum from './pages/Curriculum.jsx';
 import LessonPlanner from './pages/LessonPlanner.jsx';
@@ -129,6 +130,7 @@ export default function App() {
   const [route, setRoute] = useState('dashboard');
   const [routeParams, setRouteParams] = useState({});
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
   const online = useOnline();
 
   useEffect(() => {
@@ -142,9 +144,14 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  // الصفحة الرئيسية (الهبوط) تظهر أولاً لمن لم يسجّل الدخول
+  if (!isAuthed && showLanding) {
+    return <Landing onStart={() => setShowLanding(false)} />;
+  }
+
   // تسجيل الدخول مطلوب أولاً
   if (!isAuthed) {
-    return <Login />;
+    return <Login onHome={() => setShowLanding(true)} />;
   }
 
   // الإعداد الأولي يُطلب من مالك المنصة فقط
