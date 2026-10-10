@@ -5,15 +5,15 @@ import { formatDate, pct } from '../lib/utils.js';
 import { estimateLabel, PASS_MARK } from '../data/curriculum.js';
 
 export default function Dashboard({ go }) {
-  const { profile, classes, students, lessons, presentations, quizzes, assessments, certificates, activity } = useApp();
+  const { profile, classes, students, lessons, notebooks, presentations, quizzes, assessments, certificates, activity } = useApp();
 
   const quick = [
     { id: 'planner', name: 'تحضير درس', icon: Icon.Sparkles, desc: 'توليد تحضير احترافي', tone: 'bg-brand-600' },
+    { id: 'notebook', name: 'كراسة التحضير', icon: Icon.Clipboard, desc: 'خطة فصلية كاملة', tone: 'bg-teal-600' },
     { id: 'presentations', name: 'عرض تقديمي', icon: Icon.Slides, desc: 'شرائح جاهزة للتصدير', tone: 'bg-sand-500' },
     { id: 'grader', name: 'تصحيح ذكي', icon: Icon.CheckCircle, desc: 'رصد وتحليل تلقائي', tone: 'bg-sky-600' },
     { id: 'attendance', name: 'تسجيل الحضور', icon: Icon.Calendar, desc: 'يومي بالإحصائيات', tone: 'bg-violet-600' },
-    { id: 'certificates', name: 'إنشاء شهادة', icon: Icon.Award, desc: 'تفوق وتقدير', tone: 'bg-amber-500' },
-    { id: 'classes', name: 'إدارة الصفوف', icon: Icon.Users, desc: 'الصفوف والطلاب', tone: 'bg-slate-700' }
+    { id: 'certificates', name: 'إنشاء شهادة', icon: Icon.Award, desc: 'تفوق وتقدير', tone: 'bg-amber-500' }
   ];
 
   // ملخص الأداء العام عبر التقييمات
@@ -58,7 +58,7 @@ export default function Dashboard({ go }) {
       {/* إحصاءات */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard icon={Icon.Users} label="الطلاب" value={students.length} tone="brand" sub={`${classes.length} صف`} />
-        <StatCard icon={Icon.Sparkles} label="خطط الدروس" value={lessons.length} tone="sand" />
+        <StatCard icon={Icon.Sparkles} label="خطط الدروس" value={lessons.length} tone="sand" sub={`${notebooks.length} كراسة`} />
         <StatCard icon={Icon.Slides} label="العروض التقديمية" value={presentations.length} tone="sky" />
         <StatCard icon={Icon.CheckCircle} label="الاختبارات" value={quizzes.length} tone="violet" sub={`${assessments.length} تقييم مرصود`} />
       </div>

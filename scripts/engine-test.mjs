@@ -3,7 +3,9 @@
 import { generateLessonPlan, generateSlides, slidesToMarkdown, slidesToPptx } from '../src/lib/lessonEngine.js';
 import { analyzeClass, gradeQuestion, gradePaper, parseStudentsCsv, generateSampleQuiz } from '../src/lib/gradingEngine.js';
 import { estimateLabel, subjectsForGrade, getUnits, getLessons, GRADES } from '../src/data/curriculum.js';
+import { buildNotebook, buildWeeklyPlan, buildCoverage, notebookStats, notebookToMarkdown, notebookToCsv, termName } from '../src/lib/notebookEngine.js';
 import { pct, arabicNumber, slugify, lastNDates, normalizeArabic } from '../src/lib/utils.js';
+import { hashPin, randomSalt } from '../src/lib/storage.js';
 
 let pass = 0;
 let fail = 0;
@@ -84,6 +86,36 @@ ok(arabicNumber(7) === '٧', 'تحويل الأرقام للعربية');
 ok(slugify('اختبار الوحدة 1') === 'اختبار_الوحدة_1', 'تنظيف اسم الملف');
 ok(lastNDates(5).length === 5, 'آخر التواريخ');
 ok(normalizeArabic('أحمد') === normalizeArabic('احمد'), 'تطبيع الألف');
+
+// --- كراسة التحضير ---
+const wp = buildWeeklyPlan({ grade: 7, subjectId: 'arabic', weeks: 16, startDate: '2025-09-01' });
+ok(wp.length === 16, 'الخطة الأسبوعية 16 أسبوعاً');
+ok(wp.every((w) => w.lesson && w.unitTitle && w.homework), 'كل أسبوع له بيانات');
+ok(wp[0].date === '2025-09-01', 'تاريخ الأسبوع الأول');
+ok(wp[1].date === '2025-09-08', 'تاريخ الأسبوع الثاني (+7 أيام)');
+const cov = buildCoverage({ grade: 7, subjectId: 'arabic', weeklyPlan: wp });
+ok(cov.length > 0, 'مواءمة المنهج لها وحدات');
+ok(cov.every((u) => u.lessons.every((l) => 'week' in l)), 'كل درس له حقل أسبوع');
+const nb = buildNotebook({ subjectId: 'math', grade: 9, weeks: 12, startDate: '2025-09-01', teacherName: 'أ. محمد', school: 'مدرسة الشهيد' });
+ok(nb.meta.gradeName === 'الصف التاسع', 'اسم الصف في الكراسة');
+ok(nb.meta.termName === termName('term1'), 'اسم الفصل الدراسي');
+ok(nb.weeklyPlan.length === 12, 'عدد أسابيع الكراسة');
+ok(nb.samplePlan && nb.samplePlan.objectives.length >= 3, 'نموذج تحضير داخل الكراسة');
+const nst = notebookStats(nb);
+ok(nst.weeks === 12 && nst.lessons + nst.review === 12, 'إحصاء الكراسة متوازن');
+const nmd = notebookToMarkdown(nb);
+ok(nmd.includes('كراسة التحضير') && nmd.includes('الخطة الأسبوعية') && nmd.includes('مدرسة الشهيد'), 'تصدير الكراسة Markdown');
+const ncsv = notebookToCsv(nb);
+ok(ncsv.split('\r\n').length === 13, 'تصدير الكراسة CSV (رأس + 12 أسبوع)');
+
+// --- حساب المالك (رمز الدخول) ---
+const saltA = randomSalt();
+const saltB = randomSalt();
+ok(saltA !== saltB, 'توليد ملح عشوائي مختلف');
+ok(hashPin('1234', saltA) === hashPin('1234', saltA), 'تلبيد الرمز ثابت لنفس الملح');
+ok(hashPin('1234', saltA) !== hashPin('1234', saltB), 'الملح يغيّر الناتج');
+ok(hashPin('1234', saltA) !== hashPin('4321', saltA), 'الرمز الخاطئ لا يطابق');
+ok(hashPin('1234', saltA).length > 0, 'ناتج التلبيد غير فارغ');
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -57,3 +57,18 @@ export function clearAll() {
 export function uid(prefix = 'id') {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
+
+// تلبيد رمز الدخول (إخفاء محلي وليس تشفيراً قوياً) — كافٍ لحماية واجهة على جهاز المعلم
+export function hashPin(pin, salt) {
+  const s = `${salt}:${pin}`;
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h.toString(16);
+}
+
+export function randomSalt() {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}

@@ -6,7 +6,7 @@ import { SUBJECTS } from '../data/curriculum.js';
 import { download } from '../lib/utils.js';
 
 export default function Settings() {
-  const { profile, saveProfile, backup, restore, wipe, classes, students, lessons, presentations, quizzes, assessments, certificates } = useApp();
+  const { profile, saveProfile, backup, restore, wipe, classes, students, lessons, notebooks, presentations, quizzes, assessments, certificates } = useApp();
   const toast = useToast();
   const [form, setForm] = useState(profile);
   const [confirmWipe, setConfirmWipe] = useState(false);
@@ -39,7 +39,7 @@ export default function Settings() {
 
   const counts = {
     classes: classes.length, students: students.length, lessons: lessons.length,
-    presentations: presentations.length, quizzes: quizzes.length,
+    notebooks: notebooks.length, presentations: presentations.length, quizzes: quizzes.length,
     assessments: assessments.length, certificates: certificates.length
   };
 
@@ -73,7 +73,7 @@ export default function Settings() {
               {Object.entries(counts).map(([k, v]) => (
                 <div key={k} className="rounded-xl bg-slate-50 px-3 py-2 flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-500">
-                    {k === 'classes' ? 'صفوف' : k === 'students' ? 'طلاب' : k === 'lessons' ? 'تحضيرات' : k === 'presentations' ? 'عروض' : k === 'quizzes' ? 'اختبارات' : k === 'assessments' ? 'تقييمات' : 'شهادات'}
+                    {k === 'classes' ? 'صفوف' : k === 'students' ? 'طلاب' : k === 'lessons' ? 'تحضيرات' : k === 'notebooks' ? 'كراسات' : k === 'presentations' ? 'عروض' : k === 'quizzes' ? 'اختبارات' : k === 'assessments' ? 'تقييمات' : 'شهادات'}
                   </span>
                   <span className="font-extrabold text-slate-700">{v}</span>
                 </div>

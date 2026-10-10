@@ -8,6 +8,7 @@ const KEYS = {
   classes: 'classes',
   students: 'students',
   lessons: 'lessons',
+  notebooks: 'notebooks',
   presentations: 'presentations',
   quizzes: 'quizzes',
   assessments: 'assessments',
@@ -38,6 +39,7 @@ export function AppProvider({ children }) {
   const [classes, setClasses] = usePersistent(KEYS.classes, []);
   const [students, setStudents] = usePersistent(KEYS.students, []);
   const [lessons, setLessons] = usePersistent(KEYS.lessons, []);
+  const [notebooks, setNotebooks] = usePersistent(KEYS.notebooks, []);
   const [presentations, setPresentations] = usePersistent(KEYS.presentations, []);
   const [quizzes, setQuizzes] = usePersistent(KEYS.quizzes, []);
   const [assessments, setAssessments] = usePersistent(KEYS.assessments, []);
@@ -110,6 +112,22 @@ export function AppProvider({ children }) {
   const deleteLesson = useCallback((id) => {
     setLessons((prev) => prev.filter((l) => l.id !== id));
   }, [setLessons]);
+
+  // ===== كراسة التحضير =====
+  const addNotebook = useCallback((nb) => {
+    const item = { id: uid('nbk'), createdAt: new Date().toISOString(), ...nb };
+    setNotebooks((prev) => [item, ...prev]);
+    logActivity(`كراسة تحضير: ${nb.meta?.subjectName || ''} ${nb.meta?.gradeName || ''}`.trim());
+    return item;
+  }, [setNotebooks, logActivity]);
+
+  const updateNotebook = useCallback((id, patch) => {
+    setNotebooks((prev) => prev.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+  }, [setNotebooks]);
+
+  const deleteNotebook = useCallback((id) => {
+    setNotebooks((prev) => prev.filter((n) => n.id !== id));
+  }, [setNotebooks]);
 
   // ===== العروض التقديمية =====
   const addPresentation = useCallback((pres) => {
@@ -217,6 +235,7 @@ export function AppProvider({ children }) {
     classes, addClass, updateClass, deleteClass,
     students, addStudent, addStudentsBulk, updateStudent, deleteStudent,
     lessons, addLesson, updateLesson, deleteLesson,
+    notebooks, addNotebook, updateNotebook, deleteNotebook,
     presentations, addPresentation, updatePresentation, deletePresentation,
     quizzes, addQuiz, updateQuiz, deleteQuiz,
     assessments, addAssessment, updateAssessment, deleteAssessment, setScore,
@@ -228,6 +247,7 @@ export function AppProvider({ children }) {
     profile, saveProfile, classes, addClass, updateClass, deleteClass,
     students, addStudent, addStudentsBulk, updateStudent, deleteStudent,
     lessons, addLesson, updateLesson, deleteLesson,
+    notebooks, addNotebook, updateNotebook, deleteNotebook,
     presentations, addPresentation, updatePresentation, deletePresentation,
     quizzes, addQuiz, updateQuiz, deleteQuiz,
     assessments, addAssessment, updateAssessment, deleteAssessment, setScore,

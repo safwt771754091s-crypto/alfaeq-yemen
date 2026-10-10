@@ -55,7 +55,12 @@ export const Icon = {
   Filter: (p) => <Svg {...p}><path d="M4 5h16l-6 8v6l-4-2v-4z" /></Svg>,
   File: (p) => <Svg {...p}><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v4h4" /></Svg>,
   X: (p) => <Svg {...p}><path d="M6 6l12 12M18 6 6 18" /></Svg>,
-  TrendUp: (p) => <Svg {...p}><path d="M3 17l6-6 4 4 8-8" /><path d="M15 7h6v6" /></Svg>
+  TrendUp: (p) => <Svg {...p}><path d="M3 17l6-6 4 4 8-8" /><path d="M15 7h6v6" /></Svg>,
+  Shield: (p) => <Svg {...p}><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" /><path d="M9.5 12l2 2 3.5-4" /></Svg>,
+  Lock: (p) => <Svg {...p}><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /><path d="M12 15v2" /></Svg>,
+  Key: (p) => <Svg {...p}><circle cx="8" cy="15" r="4" /><path d="M11 12 20 3" /><path d="M17 6l2 2" /><path d="M15 8l2 2" /></Svg>,
+  LogOut: (p) => <Svg {...p}><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" /><path d="M10 12h10" /><path d="M13 9l3 3-3 3" /></Svg>,
+  Crown: (p) => <Svg {...p}><path d="M4 18h16" /><path d="M4 18 3 7l5 4 4-7 4 7 5-4-1 11" /></Svg>
 };
 
 export default Icon;

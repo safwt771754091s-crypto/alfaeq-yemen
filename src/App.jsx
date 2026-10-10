@@ -4,6 +4,7 @@ import { useApp } from './state/store.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Curriculum from './pages/Curriculum.jsx';
 import LessonPlanner from './pages/LessonPlanner.jsx';
+import LessonNotebook from './pages/LessonNotebook.jsx';
 import Presentations from './pages/Presentations.jsx';
 import Grader from './pages/Grader.jsx';
 import Gradebook from './pages/Gradebook.jsx';
@@ -11,18 +12,21 @@ import Attendance from './pages/Attendance.jsx';
 import Certificates from './pages/Certificates.jsx';
 import Classes from './pages/Classes.jsx';
 import Settings from './pages/Settings.jsx';
+import Owner from './pages/Owner.jsx';
 import Onboarding from './pages/Onboarding.jsx';
 
 const NAV = [
   { id: 'dashboard', name: 'الرئيسية', icon: Icon.Home, group: 'عام' },
   { id: 'curriculum', name: 'المنهج اليمني', icon: Icon.Book, group: 'التخطيط' },
   { id: 'planner', name: 'التحضير الذكي', icon: Icon.Sparkles, group: 'التخطيط' },
+  { id: 'notebook', name: 'كراسة التحضير', icon: Icon.Clipboard, group: 'التخطيط' },
   { id: 'presentations', name: 'العروض التقديمية', icon: Icon.Slides, group: 'التخطيط' },
   { id: 'grader', name: 'التصحيح الذكي', icon: Icon.CheckCircle, group: 'التقييم' },
   { id: 'gradebook', name: 'سجل الدرجات', icon: Icon.Clipboard, group: 'السجلات' },
   { id: 'attendance', name: 'الحضور والغياب', icon: Icon.Calendar, group: 'السجلات' },
   { id: 'certificates', name: 'الشهادات', icon: Icon.Award, group: 'السجلات' },
   { id: 'classes', name: 'الصفوف والطلاب', icon: Icon.Users, group: 'الإعداد' },
+  { id: 'owner', name: 'حساب المالك', icon: Icon.Crown, group: 'الإعداد' },
   { id: 'settings', name: 'الإعدادات', icon: Icon.Settings, group: 'الإعداد' }
 ];
 
@@ -30,12 +34,14 @@ const PAGES = {
   dashboard: Dashboard,
   curriculum: Curriculum,
   planner: LessonPlanner,
+  notebook: LessonNotebook,
   presentations: Presentations,
   grader: Grader,
   gradebook: Gradebook,
   attendance: Attendance,
   certificates: Certificates,
   classes: Classes,
+  owner: Owner,
   settings: Settings
 };
 
@@ -156,6 +162,9 @@ export default function App() {
                   <Icon.WifiOff size={14} /> وضع دون اتصال
                 </span>
               )}
+              <button className="btn-outline !px-3 !py-2" onClick={() => go('owner')} title="حساب المالك">
+                <Icon.Crown size={18} />
+              </button>
               <button className="btn-outline !px-3 !py-2" onClick={() => go('settings')} title="الإعدادات">
                 <Icon.Settings size={18} />
               </button>
