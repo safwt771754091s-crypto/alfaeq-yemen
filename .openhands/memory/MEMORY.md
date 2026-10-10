@@ -78,11 +78,25 @@ React app is the dashboard, and `Onboarding.jsx` is our landing.
   needs `/workspace/tools/jdk17` (Temurin 17 — Gradle 8.2.1 rejects JDK 21) and
   `/workspace/tools/android-sdk` (cmdline-tools + platform-34 + build-tools 34).
   Exact steps + gotchas in `2026-10-10.md`.
-- Signed release APK (~3.2 MB, `ye.teacher.smart`, minSdk 22) copied to
-  `dist/smart-teacher.apk` and served for download. Settings page has an Android
-  download card, hidden when running natively.
+- Signed release APK (~3.2 MB, `ye.teacher.smart`, minSdk 22). Permanent download:
+  `releases/latest/download/smart-teacher.apk` on the GitHub repo below.
 - **`vite build` wipes `dist/`** — re-copy the APK into `dist/` after any build.
 - Keystore `android/app/alfaeq-teacher.keystore` is a secret; gitignored, never commit.
+
+## GitHub publishing (2026-10-10)
+- Repo: `safwt771754091s-crypto/alfaeq-yemen` (was an empty placeholder; reused
+  because the CI `GITHUB_TOKEN` is a **GitHub App token** and CANNOT create repos,
+  edit repo settings, or enable Pages — those all return 403 "Resource not
+  accessible by integration"). It CAN push, create releases, upload assets.
+- Permanent APK link (verified byte-identical):
+  `https://github.com/safwt771754091s-crypto/alfaeq-yemen/releases/latest/download/smart-teacher.apk`
+  (tag `v1.0`). The Settings download card points here.
+- Web platform: committed production build in `docs/` (root, no workflow needed).
+  **One manual click required** (agent can't): repo Settings → Pages → Source =
+  "Deploy from a branch" → Branch `main` / `/docs`. Resulting URL:
+  `https://safwt771754091s-crypto.github.io/alfaeq-yemen/`.
+- jsDelivr serves repo files but as `text/plain` → NOT usable to render the SPA
+  (only good for direct file downloads). Use GitHub Pages for the web app.
 
 ## Daily logs
 - `2026-10-09.md` — built كراسة التحضير (notebook) + حساب المالك (owner account).
