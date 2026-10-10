@@ -135,7 +135,7 @@ export default function Login({ allowRegister = true, onHome }) {
               <div className="mt-4 rounded-2xl bg-sand-50 p-3.5 flex items-start gap-2.5">
                 <Icon.Crown size={18} className="text-sand-600 shrink-0 mt-0.5" />
                 <p className="text-xs text-sand-800 font-bold leading-relaxed">
-                  حساب المالك (ثابت): <b>{OWNER.name}</b> — اسم المستخدم <b dir="ltr">{OWNER.login}</b>،
+                  حساب المالك (ثابت): اسم المستخدم <b dir="ltr">{OWNER.login}</b>،
                   رمز الدخول الافتراضي <b dir="ltr">{OWNER.defaultPin}</b> (يُغيّر من حساب المالك).
                 </p>
               </div>

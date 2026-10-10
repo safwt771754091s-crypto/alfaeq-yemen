@@ -155,7 +155,7 @@ export default function Settings() {
               <div className="mt-3 rounded-2xl bg-sand-50 p-4 flex items-start gap-3">
                 <Icon.Crown size={20} className="text-sand-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-sand-800 font-bold leading-relaxed">
-                  مالك المنصة: <b>{owner?.name || 'صفوت محمد عبدالعزيز البريهي'}</b>
+                  مالك المنصة: <b dir="ltr">{owner?.username || 'safwt'}</b>
                 </p>
               </div>
             )}

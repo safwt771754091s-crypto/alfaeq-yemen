@@ -213,7 +213,7 @@ export default function Users() {
       <Card className="p-5">
         <div className="section-title mb-2"><Icon.Info size={18} /> كيف تعمل الصلاحيات؟</div>
         <p className="text-sm text-slate-500 font-bold leading-relaxed">
-          مالك المنصة <b>{users.find((u) => u.id === 'owner')?.name}</b> يملك كل الصلاحيات دائماً ولا يمكن حذفه أو إيقافه.
+          مالك المنصة <b dir="ltr">{users.find((u) => u.id === 'owner')?.username || 'safwt'}</b> يملك كل الصلاحيات دائماً ولا يمكن حذفه أو إيقافه.
           لكل دور صلاحيات افتراضية (مدير = الكل، مطّلع = قراءة فقط، معلم = كل الأدوات ما عدا إدارة المستخدمين)،
           ويمكنك تخصيص الصلاحيات صفحةً صفحة. الصفحات غير المسموح بها لا تظهر في قائمة المستخدم.
         </p>
