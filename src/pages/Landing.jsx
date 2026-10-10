@@ -5,6 +5,7 @@ import { SUBJECTS, gradeName, subjectsForGrade } from '../data/curriculum.js';
 import { OWNER } from '../state/auth.jsx';
 
 const APK_URL_PAGES = 'https://safwt771754091s-crypto.github.io/alfaeq-yemen/smart-teacher.apk';
+const ZIP_URL_PAGES = 'https://safwt771754091s-crypto.github.io/alfaeq-yemen/smart-teacher.zip';
 
 const NAV_LINKS = [
   { href: '#features', label: 'المميزات' },
@@ -505,7 +506,8 @@ export default function Landing({ onStart }) {
           <p className="mt-3 text-white/80 font-bold max-w-2xl mx-auto">ابدأ الآن مجاناً — أنشئ حسابك أو ادخل بحساب المالك لإكمال الإعداد، وكل بياناتك محفوظة على جهازك.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button onClick={onStart} className="btn-sand !py-3">🚀 ابدأ الآن مجاناً</button>
-            <a href={APK_URL_PAGES} target="_blank" rel="noreferrer" className="btn-ghost !py-3 bg-white/10 text-white hover:bg-white/20">⬇️ نزّل تطبيق الأندرويد (يعمل بدون نت)</a>
+            <a href={APK_URL_PAGES} target="_blank" rel="noreferrer" className="btn-ghost !py-3 bg-white/10 text-white hover:bg-white/20">⬇️ تطبيق الأندرويد (APK)</a>
+            <a href={ZIP_URL_PAGES} target="_blank" rel="noreferrer" className="btn-ghost !py-3 bg-white/10 text-white hover:bg-white/20">🗜️ نسخة مضغوطة (ZIP) — أسرع</a>
             <a href="#contact" className="btn-ghost !py-3 bg-white/10 text-white hover:bg-white/20">📩 تواصل معنا للمدارس</a>
           </div>
         </div>

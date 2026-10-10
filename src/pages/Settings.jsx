@@ -9,6 +9,8 @@ import { download } from '../lib/utils.js';
 const REPO_URL = 'https://github.com/safwt771754091s-crypto/alfaeq-yemen';
 const APK_URL = `${REPO_URL}/releases/latest/download/smart-teacher.apk`;
 const APK_URL_PAGES = 'https://safwt771754091s-crypto.github.io/alfaeq-yemen/smart-teacher.apk';
+const ZIP_URL = `${REPO_URL}/releases/latest/download/smart-teacher.zip`;
+const ZIP_URL_PAGES = 'https://safwt771754091s-crypto.github.io/alfaeq-yemen/smart-teacher.zip';
 
 export default function Settings() {
   const { profile, saveProfile, backup, restore, wipe, classes, students, lessons, notebooks, presentations, quizzes, assessments, certificates } = useApp();
@@ -127,15 +129,21 @@ export default function Settings() {
             <a className="btn-primary inline-flex" href={APK_URL} target="_blank" rel="noreferrer">
               <Icon.Download size={18} /> تنزيل تطبيق الأندرويد (APK)
             </a>
+            <a className="btn-sand inline-flex mt-2" href={ZIP_URL} target="_blank" rel="noreferrer">
+              <Icon.Download size={18} /> تنزيل نسخة مضغوطة (ZIP) — أسرع
+            </a>
             <div className="flex gap-2 flex-wrap mt-2">
               <a className="btn-outline inline-flex" href={APK_URL_PAGES} target="_blank" rel="noreferrer">
-                <Icon.Library size={18} /> رابط بديل للتنزيل
+                <Icon.Library size={18} /> رابط بديل (APK)
+              </a>
+              <a className="btn-outline inline-flex" href={ZIP_URL_PAGES} target="_blank" rel="noreferrer">
+                <Icon.Library size={18} /> رابط بديل (ZIP)
               </a>
               <a className="btn-outline inline-flex" href={REPO_URL} target="_blank" rel="noreferrer">
-                <Icon.Library size={18} /> مستودع التطبيق على GitHub
+                <Icon.Library size={18} /> مستودع GitHub
               </a>
             </div>
-            <p className="text-xs text-slate-400 font-bold mt-2">الإصدار {APP_VERSION} — أندرويد 5.1 فأحدث — الحجم ~3.3 م.ب</p>
+            <p className="text-xs text-slate-400 font-bold mt-2">الإصدار {APP_VERSION} — أندرويد 5.1 فأحدث — حجم APK ~1.5 م.ب / الملف المضغوط ~1.2 م.ب</p>
           </Card>
           )}
 
