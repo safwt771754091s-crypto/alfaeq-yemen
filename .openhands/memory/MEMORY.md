@@ -6,7 +6,8 @@
 `alfaeq_yemen_new` Flutter/Supabase project that previously occupied this workspace.
 - Stack: Vite + React 18 + Tailwind. No backend — everything in browser LocalStorage.
 - Offline-first PWA (vite-plugin-pwa / workbox).
-- No git remote configured; local repo on branch `master`.
+- Remote: `https://github.com/safwt771754091s-crypto/alfaeq-yemen` (default branch
+  `main`). Local branch is `master`; push with `git push https://$GITHUB_TOKEN@github.com/safwt771754091s-crypto/alfaeq-yemen master:main`.
 
 ## Verify (local)
 ```
@@ -40,8 +41,15 @@ React app is the dashboard, and `Onboarding.jsx` is our landing.
   salted) for the owner PIN.
 - `src/state/store.jsx` — useApp() global store; `usePersistent(key, initial)` helper.
   Adding a collection = add to KEYS + useState + CRUD + context value AND deps array.
-- `src/state/owner.jsx` — useOwner(): owner account (configured/name/salt/pinHash),
-  session unlock in `sessionStorage:smart_teacher_v1:owner_unlocked`.
+- `src/state/auth.jsx` — **useAuth()** = the auth/permissions provider (replaced the
+  old `owner.jsx`). Exports `APP_VERSION`, fixed `OWNER` (name صفوت محمد عبدالعزيز
+  البريهي, login/pin `safwt`), `PERMISSION_GROUPS`/`ALL_PERMISSIONS`,
+  `DEFAULT_TEACHER_PERMISSIONS` (all except `users`). Context:
+  `{ isAuthed, currentUser, owner, isOwner, can, logout, login, register, users,
+  updateUser, changeOwnPin }`. Session in LocalStorage `users` + session flag.
+  Delete `keep=['users']` is what preserves the owner across a wipe.
+- `src/pages/Login.jsx` (login + "معلم جديد؟ أنشئ حساباً"), `src/pages/Users.jsx`
+  (owner-only user/permission management).
 - `src/components/UI.jsx` — Card, SectionHeader, Field, Modal, EmptyState, StatCard,
   ProgressBar, useToast, Tabs, Confirm. `src/components/Icon.jsx` — inline SVG Icon map.
 
@@ -80,6 +88,10 @@ React app is the dashboard, and `Onboarding.jsx` is our landing.
   Exact steps + gotchas in `2026-10-10.md`.
 - Signed release APK (~3.2 MB, `ye.teacher.smart`, minSdk 22). Permanent download:
   `releases/latest/download/smart-teacher.apk` on the GitHub repo below.
+  **v1.1** (asset md5 `fde656df63f2b911895cca2b7eadc5f5`) is the auth/roles build.
+  `gh release create f#name` does NOT rename the asset — it keeps the file basename,
+  so the `download/<name>` link 404s; delete + `gh release upload` with the file
+  named `smart-teacher.apk`. Fresh assets also 404 ~1–2 min on the CDN.
 - **`vite build` wipes `dist/`** — re-copy the APK into `dist/` after any build.
 - Keystore `android/app/alfaeq-teacher.keystore` is a secret; gitignored, never commit.
 
@@ -91,10 +103,12 @@ React app is the dashboard, and `Onboarding.jsx` is our landing.
 - Permanent APK link (verified byte-identical):
   `https://github.com/safwt771754091s-crypto/alfaeq-yemen/releases/latest/download/smart-teacher.apk`
   (tag `v1.0`). The Settings download card points here.
-- Web platform: committed production build in `docs/` (root, no workflow needed).
-  **One manual click required** (agent can't): repo Settings → Pages → Source =
-  "Deploy from a branch" → Branch `main` / `/docs`. Resulting URL:
-  `https://safwt771754091s-crypto.github.io/alfaeq-yemen/`.
+- Web platform: committed production build in `docs/` (rebuild+resync after any
+  src change). Pages is **NOT enabled** (`has_pages:false`) and the App token
+  cannot enable it. `.github/workflows/deploy-pages.yml` restored in `dac3ec6`
+  (was missing from the tree). **One manual click required** (agent can't): repo
+  Settings → Pages → Source = "GitHub Actions" (preferred) or "Deploy from a
+  branch" → `main` / `/docs`. URL: `https://safwt771754091s-crypto.github.io/alfaeq-yemen/`.
 - jsDelivr serves repo files but as `text/plain` → NOT usable to render the SPA
   (only good for direct file downloads). Use GitHub Pages for the web app.
 
