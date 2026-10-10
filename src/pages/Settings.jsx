@@ -11,7 +11,7 @@ const APK_URL = `${REPO_URL}/releases/latest/download/smart-teacher.apk`;
 
 export default function Settings() {
   const { profile, saveProfile, backup, restore, wipe, classes, students, lessons, notebooks, presentations, quizzes, assessments, certificates } = useApp();
-  const { owner } = useAuth();
+  const { owner, isOwner } = useAuth();
   const toast = useToast();
   const isNative = typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
   const [form, setForm] = useState(profile);
@@ -151,12 +151,14 @@ export default function Settings() {
                 <li className="flex gap-2"><Icon.Check size={16} /> يعمل دون اتصال — البيانات محلية</li>
               </ul>
             </div>
-            <div className="mt-3 rounded-2xl bg-sand-50 p-4 flex items-start gap-3">
-              <Icon.Crown size={20} className="text-sand-600 shrink-0 mt-0.5" />
-              <p className="text-sm text-sand-800 font-bold leading-relaxed">
-                مالك المنصة: <b>{owner?.name || 'صفوت محمد عبدالعزيز البريهي'}</b>
-              </p>
-            </div>
+            {isOwner && (
+              <div className="mt-3 rounded-2xl bg-sand-50 p-4 flex items-start gap-3">
+                <Icon.Crown size={20} className="text-sand-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-sand-800 font-bold leading-relaxed">
+                  مالك المنصة: <b>{owner?.name || 'صفوت محمد عبدالعزيز البريهي'}</b>
+                </p>
+              </div>
+            )}
           </Card>
         </div>
       </div>

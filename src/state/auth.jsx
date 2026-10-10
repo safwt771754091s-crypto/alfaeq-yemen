@@ -19,7 +19,7 @@ export const OWNER = {
 
 // ===== مجموعات الصلاحيات (مفتاح الصلاحية = معرّف الصفحة في التنقل) =====
 export const PERMISSION_GROUPS = [
-  { group: 'عام', items: [['dashboard', 'لوحة التحكم'], ['followups', 'المتابعة'], ['messages', 'الرسائل'], ['library', 'المكتبة'], ['training', 'التدريب'], ['design', 'استوديو التصميم']] },
+  { group: 'عام', items: [['dashboard', 'لوحة التحكم'], ['profile', 'الملف الشخصي'], ['followups', 'المتابعة'], ['messages', 'الرسائل'], ['library', 'المكتبة'], ['training', 'التدريب'], ['design', 'استوديو التصميم']] },
   { group: 'التخطيط', items: [['curriculum', 'المنهج اليمني'], ['planner', 'التحضير الذكي'], ['notebook', 'كراسة التحضير'], ['presentations', 'العروض التقديمية'], ['timetable', 'الجدول الدراسي']] },
   { group: 'التقييم والسجلات', items: [['grader', 'التصحيح الذكي'], ['gradebook', 'سجل الدرجات'], ['attendance', 'الحضور والغياب'], ['certificates', 'الشهادات'], ['reports', 'التقارير'], ['activity', 'سجل النشاط']] },
   { group: 'تواصل وأنشطة', items: [['community', 'المجتمع'], ['announcements', 'الإعلانات'], ['reminders', 'الإشعارات'], ['mathgames', 'ألعاب الرياضيات']] },

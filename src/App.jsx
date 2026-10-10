@@ -30,6 +30,7 @@ import ActivityLog from './pages/ActivityLog.jsx';
 import Followups from './pages/Followups.jsx';
 import MathGames from './pages/MathGames.jsx';
 import Users from './pages/Users.jsx';
+import Profile from './pages/Profile.jsx';
 
 const NAV = [
   { id: 'dashboard', name: 'لوحة التحكم', icon: Icon.Home, group: 'عام' },
@@ -52,6 +53,7 @@ const NAV = [
   { id: 'reports', name: 'التقارير', icon: Icon.Chart, group: 'السجلات' },
   { id: 'activity', name: 'سجل النشاط', icon: Icon.ListChecks, group: 'السجلات' },
 
+  { id: 'profile', name: 'الملف الشخصي', icon: Icon.Users, group: 'عام' },
   { id: 'community', name: 'المجتمع', icon: Icon.Users, group: 'تواصل' },
   { id: 'announcements', name: 'الإعلانات', icon: Icon.Megaphone, group: 'تواصل' },
   { id: 'reminders', name: 'الإشعارات', icon: Icon.Bell, group: 'تواصل' },
@@ -89,7 +91,8 @@ const PAGES = {
   activity: ActivityLog,
   followups: Followups,
   users: Users,
-  mathgames: MathGames
+  mathgames: MathGames,
+  profile: Profile
 };
 
 function useOnline() {
@@ -126,7 +129,7 @@ function AccessDenied({ title, message, onLogout }) {
 
 export default function App() {
   const { profile, logActivity } = useApp();
-  const { isAuthed, currentUser, owner, isOwner, can, logout } = useAuth();
+  const { isAuthed, currentUser, isOwner, can, logout } = useAuth();
   const [route, setRoute] = useState('dashboard');
   const [routeParams, setRouteParams] = useState({});
   const [menuOpen, setMenuOpen] = useState(false);
@@ -162,7 +165,6 @@ export default function App() {
     return <Onboarding onDone={() => { logActivity('تم إعداد الحساب'); setRoute('dashboard'); }} />;
   }
 
-  const ownerName = owner?.name || 'صفوت محمد عبدالعزيز البريهي';
   const visibleNav = NAV.filter((n) => can(n.id) || n.id === 'owner');
   const groups = [...new Set(visibleNav.map((n) => n.group))];
   const routeAllowed = can(route) || route === 'owner' || route === 'dashboard';
@@ -234,7 +236,7 @@ export default function App() {
         </nav>
 
         <div className="p-3 border-t border-slate-100 space-y-2">
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50">
+          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition text-right" onClick={() => go('profile')}>
             <span className={`grid place-items-center w-10 h-10 rounded-full text-white font-extrabold shrink-0 ${isOwner ? 'bg-gradient-to-br from-sand-500 to-sand-600' : 'bg-gradient-to-br from-brand-500 to-brand-700'}`}>
               {(currentUser?.name || 'م').slice(0, 1)}
             </span>
@@ -244,18 +246,21 @@ export default function App() {
                 <Icon.Shield size={12} /> {currentUser?.roleLabel || 'معلم'}
               </div>
             </div>
-          </div>
+            <Icon.Edit size={16} className="mr-auto text-slate-300" />
+          </button>
 
-          {/* مالك المنصة — ثابت دائماً */}
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-sand-50 ring-1 ring-sand-100">
-            <span className="grid place-items-center w-9 h-9 rounded-full bg-gradient-to-br from-sand-500 to-sand-600 text-white shrink-0">
-              <Icon.Crown size={18} />
-            </span>
-            <div className="min-w-0">
-              <div className="text-[10px] text-sand-600 font-extrabold">مالك المنصة</div>
-              <div className="font-extrabold text-slate-800 text-[13px] truncate">{ownerName}</div>
-            </div>
-          </div>
+          {/* رابط الإعداد للمالك فقط — بيانات المالك لا تُعرض في كل مكان */}
+          {isOwner && (
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-sand-50 ring-1 ring-sand-100 hover:bg-sand-100 transition text-right" onClick={() => go('owner')}>
+              <span className="grid place-items-center w-9 h-9 rounded-full bg-gradient-to-br from-sand-500 to-sand-600 text-white shrink-0">
+                <Icon.Crown size={18} />
+              </span>
+              <div className="min-w-0">
+                <div className="text-[10px] text-sand-600 font-extrabold">مالك المنصة</div>
+                <div className="font-extrabold text-slate-800 text-[13px] truncate">حساب المالك والإعداد</div>
+              </div>
+            </button>
+          )}
 
           <div className="grid grid-cols-2 gap-2">
             <button className="btn-ghost !py-2 text-xs" onClick={() => go('dashboard')}>
@@ -293,7 +298,7 @@ export default function App() {
                 {NAV.find((n) => n.id === route)?.name || 'الرئيسية'}
               </h1>
               <p className="text-[11px] sm:text-xs text-slate-400 font-bold truncate">
-                {currentUser?.name ? `أ. ${currentUser.name}` : 'منصة المعلم الذكية'} — مالك المنصة: {ownerName}
+                {currentUser?.name ? `أ. ${currentUser.name}` : 'منصة المعلم الذكية'}
               </p>
             </div>
             <div className="mr-auto flex items-center gap-2">
@@ -302,9 +307,15 @@ export default function App() {
                   <Icon.WifiOff size={14} /> وضع دون اتصال
                 </span>
               )}
-              <button className="btn-outline !px-3 !py-2" onClick={() => go('owner')} title={`مالك المنصة: ${ownerName}`}>
-                <Icon.Crown size={18} />
-              </button>
+              {isOwner ? (
+                <button className="btn-outline !px-3 !py-2" onClick={() => go('owner')} title="حساب المالك والإعداد">
+                  <Icon.Crown size={18} />
+                </button>
+              ) : (
+                <button className="btn-outline !px-3 !py-2" onClick={() => go('profile')} title="الملف الشخصي">
+                  <Icon.Users size={18} />
+                </button>
+              )}
               <button className="btn-outline !px-3 !py-2" onClick={() => go('settings')} title="الإعدادات">
                 <Icon.Settings size={18} />
               </button>
