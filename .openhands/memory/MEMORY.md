@@ -87,12 +87,14 @@ unauthenticated users), and the React dashboard is the app.
   needs `/workspace/tools/jdk17` (Temurin 17 — Gradle 8.2.1 rejects JDK 21) and
   `/workspace/tools/android-sdk` (cmdline-tools + platform-34 + build-tools 34).
   Exact steps + gotchas in `2026-10-10.md`.
-- Signed release APK (~3.2 MB, `ye.teacher.smart`, minSdk 22). Permanent download:
+- Signed release APK (~3.3 MB, `ye.teacher.smart`, minSdk 22). Permanent download:
   `releases/latest/download/smart-teacher.apk` on the GitHub repo below.
-  **v1.1** (asset md5 `fde656df63f2b911895cca2b7eadc5f5`) is the auth/roles build.
-  `gh release create f#name` does NOT rename the asset — it keeps the file basename,
-  so the `download/<name>` link 404s; delete + `gh release upload` with the file
-  named `smart-teacher.apk`. Fresh assets also 404 ~1–2 min on the CDN.
+  **v1.3** (versionCode 3) is the current build (offline + real contact info).
+  v1.1 was the auth/roles build. `gh release create` keeps the file basename, so the
+  asset must be named `smart-teacher.apk`. Fresh assets also 404 ~1–2 min on the CDN.
+  HARDENING TODO: the release signing uses default passwords (store/key `teacher123`,
+  alias `teacher`) from the tracked keystore — should move to repo secrets before
+  public distribution.
 - **`vite build` wipes `dist/`** — re-copy the APK into `dist/` after any build.
 - Keystore `android/app/alfaeq-teacher.keystore` is a secret; gitignored, never commit.
 
@@ -101,15 +103,14 @@ unauthenticated users), and the React dashboard is the app.
   because the CI `GITHUB_TOKEN` is a **GitHub App token** and CANNOT create repos,
   edit repo settings, or enable Pages — those all return 403 "Resource not
   accessible by integration"). It CAN push, create releases, upload assets.
-- Permanent APK link (verified byte-identical):
-  `https://github.com/safwt771754091s-crypto/alfaeq-yemen/releases/latest/download/smart-teacher.apk`
-  (tag `v1.0`). The Settings download card points here.
+- Permanent APK link (verified byte-identical, serving v1.3):
+  `https://github.com/safwt771754091s-crypto/alfaeq-yemen/releases/latest/download/smart-teacher.apk`.
+  The Settings + landing download cards point here (and the Pages mirror).
 - Web platform: committed production build in `docs/` (rebuild+resync after any
-  src change). Pages is **NOT enabled** (`has_pages:false`) and the App token
-  cannot enable it. `.github/workflows/deploy-pages.yml` restored in `dac3ec6`
-  (was missing from the tree). **One manual click required** (agent can't): repo
-  Settings → Pages → Source = "GitHub Actions" (preferred) or "Deploy from a
-  branch" → `main` / `/docs`. URL: `https://safwt771754091s-crypto.github.io/alfaeq-yemen/`.
+  src change). Pages is **now ENABLED** and `deploy-pages.yml` deploys on push to
+  main (GitHub Actions source). It also auto-attaches `smart-teacher.apk` from the
+  latest release to the Pages site (`docs/smart-teacher.apk`). URL:
+  `https://safwt771754091s-crypto.github.io/alfaeq-yemen/`.
 - jsDelivr serves repo files but as `text/plain` → NOT usable to render the SPA
   (only good for direct file downloads). Use GitHub Pages for the web app.
 
