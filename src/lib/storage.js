@@ -45,11 +45,14 @@ export function importAll(data) {
   return true;
 }
 
-export function clearAll() {
+export function clearAll(keep = []) {
   const keys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k && k.startsWith(`${NS}:`)) keys.push(k);
+    if (k && k.startsWith(`${NS}:`)) {
+      const short = k.slice(NS.length + 1);
+      if (!keep.includes(short)) keys.push(k);
+    }
   }
   keys.forEach((k) => localStorage.removeItem(k));
 }

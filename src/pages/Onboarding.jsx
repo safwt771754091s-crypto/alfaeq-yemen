@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { Field } from '../components/UI.jsx';
 import { useApp } from '../state/store.jsx';
+import { useAuth } from '../state/auth.jsx';
 import { SUBJECTS } from '../data/curriculum.js';
 
 const FEATURES = [
@@ -13,9 +14,10 @@ const FEATURES = [
 
 export default function Onboarding({ onDone }) {
   const { saveProfile } = useApp();
+  const { currentUser, owner } = useAuth();
   const [form, setForm] = useState({
-    name: '',
-    school: '',
+    name: currentUser?.name || owner?.name || '',
+    school: currentUser?.school || '',
     directorate: '',
     governorate: '',
     mainSubject: 'arabic'

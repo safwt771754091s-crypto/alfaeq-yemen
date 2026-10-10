@@ -2,13 +2,16 @@ import { useRef, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { Card, SectionHeader, Field, useToast, Confirm, Modal } from '../components/UI.jsx';
 import { useApp } from '../state/store.jsx';
+import { useAuth, APP_VERSION } from '../state/auth.jsx';
 import { SUBJECTS } from '../data/curriculum.js';
 import { download } from '../lib/utils.js';
 
-const APK_URL = 'https://github.com/safwt771754091s-crypto/alfaeq-yemen/releases/latest/download/smart-teacher.apk';
+const REPO_URL = 'https://github.com/safwt771754091s-crypto/alfaeq-yemen';
+const APK_URL = `${REPO_URL}/releases/latest/download/smart-teacher.apk`;
 
 export default function Settings() {
   const { profile, saveProfile, backup, restore, wipe, classes, students, lessons, notebooks, presentations, quizzes, assessments, certificates } = useApp();
+  const { owner } = useAuth();
   const toast = useToast();
   const isNative = typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
   const [form, setForm] = useState(profile);
@@ -123,7 +126,10 @@ export default function Settings() {
             <a className="btn-primary inline-flex" href={APK_URL} target="_blank" rel="noreferrer">
               <Icon.Download size={18} /> تنزيل تطبيق الأندرويد (APK)
             </a>
-            <p className="text-xs text-slate-400 font-bold mt-2">الإصدار 1.0 — أندرويد 5.1 فأحدث — الحجم ~3 م.ب</p>
+            <a className="btn-outline inline-flex mr-2 mt-2" href={REPO_URL} target="_blank" rel="noreferrer">
+              <Icon.Library size={18} /> مستودع التطبيق على GitHub
+            </a>
+            <p className="text-xs text-slate-400 font-bold mt-2">الإصدار {APP_VERSION} — أندرويد 5.1 فأحدث — الحجم ~3 م.ب</p>
           </Card>
           )}
 
@@ -134,7 +140,7 @@ export default function Settings() {
                 <Icon.School size={30} />
                 <div>
                   <div className="font-extrabold">منصة المعلم الذكية</div>
-                  <div className="text-xs opacity-90">الإصدار 1.0 — للمعلم اليمني</div>
+                  <div className="text-xs opacity-90">الإصدار {APP_VERSION} — للمعلم اليمني</div>
                 </div>
               </div>
               <ul className="mt-3 space-y-1.5 text-sm opacity-95">
@@ -144,6 +150,12 @@ export default function Settings() {
                 <li className="flex gap-2"><Icon.Check size={16} /> سجلات الدرجات والحضور والشهادات</li>
                 <li className="flex gap-2"><Icon.Check size={16} /> يعمل دون اتصال — البيانات محلية</li>
               </ul>
+            </div>
+            <div className="mt-3 rounded-2xl bg-sand-50 p-4 flex items-start gap-3">
+              <Icon.Crown size={20} className="text-sand-600 shrink-0 mt-0.5" />
+              <p className="text-sm text-sand-800 font-bold leading-relaxed">
+                مالك المنصة: <b>{owner?.name || 'صفوت محمد عبدالعزيز البريهي'}</b>
+              </p>
             </div>
           </Card>
         </div>

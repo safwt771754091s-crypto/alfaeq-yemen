@@ -265,7 +265,8 @@ export function AppProvider({ children }) {
     window.location.reload();
   }, []);
   const wipe = useCallback(() => {
-    clearAll();
+    // نحافظ على حسابات المستخدمين حتى يبقى المالك مرتبطاً بالمنصة
+    clearAll(['users']);
     window.location.reload();
   }, []);
 
