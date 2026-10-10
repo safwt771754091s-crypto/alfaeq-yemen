@@ -54,7 +54,7 @@ export default function Profile() {
           <Field label="المحافظة"><input className="input" value={form.governorate || ''} onChange={(e) => set('governorate', e.target.value)} /></Field>
           <Field label="التخصص الرئيسي">
             <select className="input" value={form.mainSubject || 'arabic'} onChange={(e) => set('mainSubject', e.target.value)}>
-              {SUBJECTS.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {Object.values(SUBJECTS).map((s) => <option key={s.id} value={s.id}>{s.icon} {s.name}</option>)}
             </select>
           </Field>
           <Field label="المؤهل العلمي" hint="اختياري"><input className="input" value={form.degree || ''} onChange={(e) => set('degree', e.target.value)} placeholder="بكالوريوس / ماجستير..." /></Field>
