@@ -165,9 +165,9 @@ export default function App() {
     return <Onboarding onDone={() => { logActivity('تم إعداد الحساب'); setRoute('dashboard'); }} />;
   }
 
-  const visibleNav = NAV.filter((n) => can(n.id) || n.id === 'owner');
+  const visibleNav = NAV.filter((n) => (n.id === 'owner' ? isOwner : can(n.id)));
   const groups = [...new Set(visibleNav.map((n) => n.group))];
-  const routeAllowed = can(route) || route === 'owner' || route === 'dashboard';
+  const routeAllowed = (route === 'owner' ? isOwner : can(route)) || route === 'dashboard';
   const Current = routeAllowed ? (PAGES[route] || Dashboard) : Dashboard;
 
   const go = (id, params = {}) => {

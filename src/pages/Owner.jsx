@@ -59,6 +59,9 @@ export default function Owner() {
   const [pins, setPins] = useState({ cur: '', nw: '', nw2: '' });
   const [perms, setPerms] = useState(owner?.permissions || []);
 
+  // حماية: لا تُعرض بيانات المالك لغير المالك (دفاع في العمق حتى لو اختُرق التوجيه)
+  if (!isOwner) return null;
+
   const savePerms = (next) => {
     setPerms(next);
     updateUser('owner', { permissions: next });
