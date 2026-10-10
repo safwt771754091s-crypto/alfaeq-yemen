@@ -6,18 +6,45 @@ import { GRADES_BY_STAGE, subjectsForGrade, getLessons } from '../data/curriculu
 import { generateSlides, slidesToMarkdown, slidesToPptx } from '../lib/lessonEngine.js';
 import { download, downloadBlob, slugify } from '../lib/utils.js';
 
+// يقرأ صورة المعلم ويعيد تحجيمها إلى بيانات مضغوطة (data URI) لتبقى خفيفة.
+async function readImageResized(file, maxW = 1000, maxH = 700) {
+  const dataUrl = await new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const ratio = Math.min(1, maxW / img.width, maxH / img.height);
+      const w = Math.round(img.width * ratio);
+      const h = Math.round(img.height * ratio);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      try { resolve(canvas.toDataURL('image/jpeg', 0.82)); } catch (e) { resolve(dataUrl); }
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 function SlidePreview({ slide, index, total }) {
   const layouts = {
     title: 'bg-gradient-to-br from-brand-600 to-brand-800 text-white',
     end: 'bg-gradient-to-br from-slate-800 to-slate-900 text-white',
     quote: 'bg-gradient-to-br from-sand-100 to-sand-200 text-sand-900',
     activity: 'bg-gradient-to-br from-sky-50 to-sky-100 text-slate-800',
+    visual: 'bg-white text-slate-800',
+    examples: 'bg-gradient-to-br from-amber-50 to-orange-50 text-slate-800',
     bullets: 'bg-white text-slate-800'
   };
   const cls = layouts[slide.layout] || layouts.bullets;
   const isTitle = slide.layout === 'title';
   const isEnd = slide.layout === 'end';
   const light = isTitle || isEnd;
+  const bigImg = slide.image && (slide.layout === 'visual' || slide.layout === 'title');
 
   return (
     <div className={`slide-16-9 rounded-2xl overflow-hidden border border-slate-200 shadow-soft flex flex-col ${cls}`}>
@@ -25,6 +52,7 @@ function SlidePreview({ slide, index, total }) {
       <div className={`grow p-5 sm:p-7 flex flex-col ${isTitle || isEnd ? 'items-center justify-center text-center' : ''}`}>
         {slide.layout === 'quote' && <Icon.Lightbulb size={26} className="mb-2 opacity-70" />}
         {slide.layout === 'activity' && <Icon.Target size={26} className="mb-2 text-sky-600" />}
+        {slide.layout === 'examples' && <Icon.Lightbulb size={26} className="mb-2 text-amber-600" />}
         <h3 className={`font-extrabold ${isTitle ? 'text-2xl sm:text-4xl' : 'text-lg sm:text-2xl'} ${isTitle || isEnd ? '' : 'text-slate-800'}`}>
           {slide.heading}
         </h3>
@@ -32,6 +60,13 @@ function SlidePreview({ slide, index, total }) {
           <p className={`mt-2 text-sm sm:text-base font-bold ${light ? 'opacity-90' : slide.layout === 'quote' ? 'text-sand-700' : 'text-slate-500'}`}>
             {slide.sub}
           </p>
+        )}
+        {slide.image && (
+          <img
+            src={slide.image}
+            alt={slide.heading}
+            className={`mt-3 rounded-xl ${bigImg ? 'w-full max-w-md mx-auto' : 'w-full max-w-[9rem] self-start'}`}
+          />
         )}
         {slide.bullets?.length > 0 && (
           <ul className={`mt-4 space-y-2 w-full ${isTitle || isEnd ? 'text-center' : ''}`}>
@@ -68,6 +103,7 @@ export default function Presentations({ go, params }) {
   const [active, setActive] = useState(0);
   const [confirmDel, setConfirmDel] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [customImage, setCustomImage] = useState('');
 
   useEffect(() => { if (params?.title) setForm((f) => ({ ...f, ...params })); }, [params]);
 
@@ -81,12 +117,23 @@ export default function Presentations({ go, params }) {
   const generate = (e) => {
     e?.preventDefault();
     if (!form.title.trim()) { toast.push('أدخل عنوان الدرس', 'error'); return; }
-    const d = generateSlides(form);
+    const d = generateSlides({ ...form, customImage });
     setDeck(d);
     setActive(0);
     setSaved(false);
     setView('new');
     toast.push(`تم توليد ${d.slides.length} شريحة`);
+  };
+
+  const onPickImage = async (file) => {
+    if (!file) return;
+    try {
+      const dataUri = await readImageResized(file);
+      setCustomImage(dataUri);
+      toast.push('تم إضافة الصورة — أعد توليد العرض لتظهر');
+    } catch (err) {
+      toast.push('تعذّر قراءة الصورة', 'error');
+    }
   };
 
   const save = () => {
@@ -186,6 +233,21 @@ export default function Presentations({ go, params }) {
               <Field label="عنوان الدرس" required>
                 <input className="input" list="pres-suggestions" value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="عنوان الدرس" required />
                 <datalist id="pres-suggestions">{suggestions.map((s, i) => <option key={i} value={s} />)}</datalist>
+              </Field>
+              <Field label="صورة توضيحية (اختياري)">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <label className="btn-outline inline-flex cursor-pointer">
+                    <Icon.File size={18} /> اختيار صورة من الجهاز
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => onPickImage(e.target.files?.[0])} />
+                  </label>
+                  {customImage && (
+                    <>
+                      <img src={customImage} alt="معاينة" className="h-12 rounded-lg border border-slate-200" />
+                      <button type="button" className="btn-ghost !px-3 !py-2 text-xs" onClick={() => setCustomImage('')}><Icon.Trash size={15} /> إزالة</button>
+                    </>
+                  )}
+                  {!customImage && <span className="text-xs text-slate-400 font-bold">إن لم تختر صورة، نولّد لك رسماً توضيحياً تلقائياً.</span>}
+                </div>
               </Field>
               <div className="flex flex-wrap gap-2">
                 <button type="submit" className="btn-primary"><Icon.Slides size={18} /> توليد العرض</button>

@@ -43,6 +43,24 @@ function PlanView({ plan }) {
         </Card>
       </div>
 
+      {plan.illustration && (
+        <Card className="p-4">
+          <div className="section-title mb-3"><Icon.Eye size={18} /> صورة توضيحية وأمثلة</div>
+          <div className="grid sm:grid-cols-2 gap-4 items-start">
+            <img src={plan.illustration} alt={plan.title} className="w-full rounded-2xl border border-slate-200" />
+            <div className="space-y-3">
+              <div className="font-bold text-slate-700 text-sm">{plan.title}</div>
+              {(plan.examples || []).map((ex, i) => (
+                <div key={i} className="flex gap-2 text-sm text-slate-600 rounded-xl bg-amber-50 px-3 py-2">
+                  <Icon.Lightbulb size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  <span>{ex}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="p-4">
         <div className="section-title mb-3"><Icon.Book size={18} /> عناصر الدرس ومحتواه</div>
         <div className="space-y-4">

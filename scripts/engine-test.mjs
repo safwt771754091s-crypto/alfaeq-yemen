@@ -43,6 +43,12 @@ const deck = generateSlides({ subjectId: 'math', grade: 9, title: 'المعاد�
 ok(deck.slides[0].layout === 'title', 'أول شريحة عنوان');
 ok(deck.slides[deck.slides.length - 1].layout === 'end', 'آخر شريحة خاتمة');
 ok(deck.slides.length >= 8, 'عدد الشرائح >= 8');
+ok(deck.slides.some((s) => s.layout === 'visual'), 'يوجد شريحة صورة توضيحية');
+ok(deck.slides.some((s) => s.layout === 'examples'), 'يوجد شريحة أمثلة وتطبيقات');
+ok(deck.slides.some((s) => typeof s.image === 'string' && s.image.startsWith('data:image/svg')), 'الشريحة تحمل صورة SVG مضمّنة');
+ok(deck.slides[0].image && deck.slides[0].image.startsWith('data:image/svg'), 'شريحة العنوان تحمل صورة');
+ok(plan.examples && plan.examples.length >= 2, 'التحضير يتضمن أمثلة');
+ok(typeof plan.illustration === 'string' && plan.illustration.startsWith('data:image/svg'), 'التحضير يتضمن صورة توضيحية');
 const md = slidesToMarkdown(deck);
 ok(md.includes('---') && md.includes('# المعادلات'), 'تصدير Markdown');
 const blob = await slidesToPptx(deck);

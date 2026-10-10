@@ -1,5 +1,6 @@
 import { SUBJECTS, gradeName, gradeCycle, getUnits } from '../data/curriculum.js';
 import { STRATEGIES, BLOOM, ASSESSMENT_TOOLS } from '../data/strategies.js';
+import { topicIllustration, topicExamples } from './illustrations.js';
 
 function pick(arr, seed) {
   return arr[Math.abs(hash(seed)) % arr.length];
@@ -60,6 +61,7 @@ function buildObjectives(topic, subjectId, grade) {
 function lessonElements(topic, subjectId, grade) {
   const subject = SUBJECTS[subjectId];
   const nm = subject ? subject.name : 'المادة';
+  const ex = topicExamples(subjectId, topic);
   return [
     { title: 'عناصر الدرس', items: [
       `التعريف بالمفهوم الأساسي في «${topic}»`,
@@ -73,7 +75,8 @@ function lessonElements(topic, subjectId, grade) {
       `القواعد والأنماط التي يحكمها «${topic}»`,
       `التطبيقات العملية والواقعية`,
       `الأخطاء الشائعة وتصويبها`
-    ]}
+    ]},
+    { title: 'أمثلة وتطبيقات', items: ex }
   ];
 }
 
@@ -146,6 +149,8 @@ export function generateLessonPlan({ subjectId, grade, title, duration = 45, sec
     objectives: genObjectives,
     warmUp: warmUp(title, subjectId),
     elements,
+    examples: topicExamples(subjectId, title),
+    illustration: topicIllustration({ subjectId, topic: title }),
     strategies,
     phases,
     assessment: assessments,
@@ -161,7 +166,7 @@ export function generateLessonPlan({ subjectId, grade, title, duration = 45, sec
 }
 
 // =============== مولّد العرض التقديمي (الشرائح) ===============
-export function generateSlides({ subjectId, grade, title, duration = 45, lessonPlan = null, slideCount = 10 }) {
+export function generateSlides({ subjectId, grade, title, duration = 45, lessonPlan = null, slideCount = 10, customImage = '' }) {
   const subject = SUBJECTS[subjectId];
   const nm = subject ? subject.name : 'المادة';
   const plan = lessonPlan || generateLessonPlan({ subjectId, grade, title, duration });
@@ -169,12 +174,15 @@ export function generateSlides({ subjectId, grade, title, duration = 45, lessonP
   const relatedUnit = units.find((u) => u.lessons.some((l) => l === title));
 
   const slides = [];
+  const mainImage = customImage || topicIllustration({ subjectId, topic: title });
+  const examples = (plan.examples && plan.examples.length) ? plan.examples : topicExamples(subjectId, title);
   // شريحة العنوان
   slides.push({
     layout: 'title',
     heading: title,
     sub: `${nm} — ${gradeName(grade)}`,
-    bullets: []
+    bullets: [],
+    image: mainImage
   });
   // أهداف الدرس
   slides.push({
@@ -189,6 +197,14 @@ export function generateSlides({ subjectId, grade, title, duration = 45, lessonP
     heading: 'تهيئة',
     sub: plan.warmUp,
     bullets: []
+  });
+  // صورة توضيحية
+  slides.push({
+    layout: 'visual',
+    heading: 'صورة توضيحية',
+    sub: relatedUnit ? `الوحدة: ${relatedUnit.title}` : `مشهد تعليمي مرتبط بـ«${title}»`,
+    bullets: [],
+    image: mainImage
   });
   // المحتوى — موزع على عدة شرائح
   const conceptSlides = Math.max(3, slideCount - 6);
@@ -205,6 +221,14 @@ export function generateSlides({ subjectId, grade, title, duration = 45, lessonP
       bullets: chunk.length ? chunk : [`عنصر ${i + 1} من محتوى «${title}»`]
     });
   }
+  // أمثلة وتطبيقات
+  slides.push({
+    layout: 'examples',
+    heading: 'أمثلة وتطبيقات',
+    sub: `أمثلة واقعية مرتبطة بـ«${title}»`,
+    bullets: examples,
+    image: customImage || topicIllustration({ subjectId, topic: title + ' مثال' })
+  });
   // نشاط صفي
   slides.push({
     layout: 'activity',
@@ -253,9 +277,11 @@ export function slidesToMarkdown(pres) {
     if (s.layout === 'title') {
       lines.push(`# ${s.heading}`);
       if (s.sub) lines.push(`## ${s.sub}`);
+      if (s.image) lines.push(`\n![${s.heading}](${s.image})\n`);
     } else {
       lines.push(`## ${s.heading}`);
       if (s.sub) lines.push(`> ${s.sub}`);
+      if (s.image) lines.push(`\n![${s.heading}](${s.image})\n`);
       if (s.bullets?.length) {
         lines.push('');
         s.bullets.forEach((b) => lines.push(`- ${b}`));
@@ -270,10 +296,66 @@ export function slidesToMarkdown(pres) {
 
 // =============== تصدير الشرائح إلى PowerPoint (PPTX) ===============
 // يبني حزمة PPTX صالحة (OOXML) دون مكتبات خارجية.
+// إن توفّر المتصفح نُحوّل الرسوم التوضيحية (SVG) إلى PNG ونضمّنها في الشرائح.
 export async function slidesToPptx(pres) {
-  const files = buildPptxFiles(pres);
+  const imageMap = await buildImageMap(pres);
+  const files = buildPptxFiles(pres, imageMap);
   const blob = await zipFiles(files);
   return blob;
+}
+
+function dataUrlToBytes(dataUrl) {
+  const comma = dataUrl.indexOf(',');
+  const meta = dataUrl.slice(0, comma);
+  const data = dataUrl.slice(comma + 1);
+  if (meta.includes('base64')) {
+    const bin = typeof atob === 'function'
+      ? atob(data)
+      : Buffer.from(data, 'base64').toString('binary');
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  return new TextEncoder().encode(decodeURIComponent(data));
+}
+
+// يحوّل كل صورة SVG (data URI) إلى PNG عبر canvas. يعمل فقط في المتصفح.
+async function rasterizeDataUri(dataUri, w = 800, h = 520) {
+  if (typeof document === 'undefined' || !dataUri) return null;
+  return new Promise((resolve) => {
+    try {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(dataUrlToBytes(canvas.toDataURL('image/png')));
+        } catch (e) { resolve(null); }
+      };
+      img.onerror = () => resolve(null);
+      img.src = dataUri;
+    } catch (e) { resolve(null); }
+  });
+}
+
+async function buildImageMap(pres) {
+  const map = {};
+  if (typeof document === 'undefined') return map;
+  let n = 0;
+  for (const s of pres.slides) {
+    if (s.image && !map[s.image]) {
+      const bytes = await rasterizeDataUri(s.image);
+      if (bytes) {
+        n++;
+        map[s.image] = { name: `image${n}.png`, bytes };
+      }
+    }
+  }
+  return map;
 }
 
 function xmlEscape(s) {
@@ -285,9 +367,29 @@ function xmlEscape(s) {
     .replace(/'/g, '&apos;');
 }
 
-function slideXml(slide, index, total, deckTitle) {
+function pictureXml(relId, x, y, cx, cy, id = 20) {
+  return `
+  <p:pic>
+    <p:nvPicPr>
+      <p:cNvPr id="${id}" name="Picture ${id}"/>
+      <p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr>
+      <p:nvPr/>
+    </p:nvPicPr>
+    <p:blipFill>
+      <a:blip r:embed="${relId}"/>
+      <a:stretch><a:fillRect/></a:stretch>
+    </p:blipFill>
+    <p:spPr>
+      <a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>
+      <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+    </p:spPr>
+  </p:pic>`;
+}
+
+function slideXml(slide, index, total, deckTitle, imageRelId) {
   const isTitle = slide.layout === 'title';
   const isEnd = slide.layout === 'end';
+  const hasImage = !!imageRelId;
   const titleSize = isTitle ? 4400 : 3000;
   const bodySize = 2000;
   const shapes = [];
@@ -306,10 +408,10 @@ function slideXml(slide, index, total, deckTitle) {
   shapes.push(`
   <p:sp>
     <p:nvSpPr><p:cNvPr id="3" name="Title"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>
-    <p:spPr><a:xfrm><a:off x="838200" y="${isTitle ? 2200000 : 700000}"/><a:ext cx="10515600" cy="1400000"/></a:xfrm>
+    <p:spPr><a:xfrm><a:off x="838200" y="${isTitle ? 1500000 : 600000}"/><a:ext cx="10515600" cy="1200000"/></a:xfrm>
       <a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr>
     <p:txBody><a:bodyPr anchor="ctr" rtlCol="1"/><a:lstStyle/>
-      <a:p><a:pPr algn="${isTitle ? 'ctr' : 'r'}" rtl="1"/><a:r><a:rPr lang="ar-SA" sz="${titleSize}" b="1"><a:solidFill><a:srgbClr val="0B3B33"/></a:solidFill><a:latin typeface="Tajawal"/><a:cs typeface="Tajawal"/></a:rPr><a:t>${xmlEscape(slide.heading)}</a:t></a:r></a:p>
+      <a:p><a:pPr algn="${isTitle || isEnd ? 'ctr' : 'r'}" rtl="1"/><a:r><a:rPr lang="ar-SA" sz="${titleSize}" b="1"><a:solidFill><a:srgbClr val="0B3B33"/></a:solidFill><a:latin typeface="Tajawal"/><a:cs typeface="Tajawal"/></a:rPr><a:t>${xmlEscape(slide.heading)}</a:t></a:r></a:p>
     </p:txBody>
   </p:sp>`);
 
@@ -318,12 +420,31 @@ function slideXml(slide, index, total, deckTitle) {
     shapes.push(`
     <p:sp>
       <p:nvSpPr><p:cNvPr id="4" name="Sub"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>
-      <p:spPr><a:xfrm><a:off x="838200" y="${isTitle ? 3200000 : 1550000}"/><a:ext cx="10515600" cy="900000"/></a:xfrm>
+      <p:spPr><a:xfrm><a:off x="838200" y="${isTitle ? 2500000 : 1350000}"/><a:ext cx="10515600" cy="700000"/></a:xfrm>
         <a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr>
       <p:txBody><a:bodyPr anchor="t" rtlCol="1"/><a:lstStyle/>
-        <a:p><a:pPr algn="${isTitle ? 'ctr' : 'r'}" rtl="1"/><a:r><a:rPr lang="ar-SA" sz="2000"><a:solidFill><a:srgbClr val="475569"/></a:solidFill><a:cs typeface="Tajawal"/></a:rPr><a:t>${xmlEscape(slide.sub)}</a:t></a:r></a:p>
+        <a:p><a:pPr algn="${isTitle || isEnd ? 'ctr' : 'r'}" rtl="1"/><a:r><a:rPr lang="ar-SA" sz="2000"><a:solidFill><a:srgbClr val="475569"/></a:solidFill><a:cs typeface="Tajawal"/></a:rPr><a:t>${xmlEscape(slide.sub)}</a:t></a:r></a:p>
       </p:txBody>
     </p:sp>`);
+  }
+
+  // الصورة التوضيحية + تخطيط المحتوى حسب وجود الصورة
+  let bodyOffX = 838200, bodyOffY = 2500000, bodyCx = 10515600, bodyCy = 3800000;
+  if (hasImage) {
+    if (slide.layout === 'visual' || isTitle) {
+      // صورة كبيرة في الأسفل، والمحتوى أعلى
+      const imgX = 4596000, imgY = isTitle ? 3600000 : 2200000;
+      const imgCx = 3000000, imgCy = 1950000;
+      shapes.push(pictureXml(imageRelId, imgX, imgY, imgCx, imgCy));
+      bodyCx = 10515600;
+      bodyOffY = 2200000;
+      bodyCy = 1200000;
+    } else {
+      // المحتوى على اليمين (RTL) والصورة على اليسار
+      shapes.push(pictureXml(imageRelId, 700000, 2300000, 4600000, 3100000));
+      bodyOffX = 5600000;
+      bodyCx = 5750000;
+    }
   }
 
   // القائمة النقطية
@@ -334,7 +455,7 @@ function slideXml(slide, index, total, deckTitle) {
     shapes.push(`
     <p:sp>
       <p:nvSpPr><p:cNvPr id="5" name="Body"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>
-      <p:spPr><a:xfrm><a:off x="838200" y="2500000"/><a:ext cx="10515600" cy="4200000"/></a:xfrm>
+      <p:spPr><a:xfrm><a:off x="${bodyOffX}" y="${bodyOffY}"/><a:ext cx="${bodyCx}" cy="${bodyCy}"/></a:xfrm>
         <a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr>
       <p:txBody><a:bodyPr anchor="t" rtlCol="1"/><a:lstStyle/>${paras}
       </p:txBody>
@@ -357,14 +478,20 @@ function slideXml(slide, index, total, deckTitle) {
 </p:sld>`;
 }
 
-function buildPptxFiles(pres) {
+function buildPptxFiles(pres, imageMap = {}) {
   const total = pres.slides.length;
   const files = {};
+
+  const hasImages = Object.keys(imageMap).length > 0;
+  const imageDefaults = hasImages
+    ? '<Default Extension="png" ContentType="image/png"/>'
+    : '';
 
   files['[Content_Types].xml'] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
   <Default Extension="xml" ContentType="application/xml"/>
+  ${imageDefaults}
   <Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>
   <Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/>
   <Override PartName="/ppt/slideLayouts/slideLayout1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/>
@@ -472,10 +599,17 @@ function buildPptxFiles(pres) {
 </a:theme>`;
 
   pres.slides.forEach((s, i) => {
-    files[`ppt/slides/slide${i + 1}.xml`] = slideXml(s, i, total, pres.title);
+    const img = s.image ? imageMap[s.image] : null;
+    const rels = [`<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>`];
+    if (img) {
+      files[`ppt/media/${img.name}`] = img.bytes;
+      // rId2 = الصورة
+      rels.push(`<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/${img.name}"/>`);
+    }
+    files[`ppt/slides/slide${i + 1}.xml`] = slideXml(s, i, total, pres.title, img ? 'rId2' : null);
     files[`ppt/slides/_rels/slide${i + 1}.xml.rels`] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
+  ${rels.join('\n  ')}
 </Relationships>`;
   });
 
