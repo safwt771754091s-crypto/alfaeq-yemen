@@ -9,12 +9,13 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
   }
   body {
     @apply bg-slate-50 text-slate-800 font-sans antialiased;
     background-image:
-      radial-gradient(1200px 600px at 100% -10%, rgba(16, 185, 141, 0.08), transparent 60%),
-      radial-gradient(900px 500px at -10% 0%, rgba(200, 144, 63, 0.08), transparent 55%);
+      radial-gradient(1200px 600px at 100% -10%, rgba(20, 184, 166, 0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 0%, rgba(245, 158, 11, 0.08), transparent 55%);
     background-attachment: fixed;
   }
   h1, h2, h3, h4 {
@@ -39,7 +40,7 @@
            focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 disabled:opacity-50 disabled:cursor-not-allowed select-none;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-soft;
+    @apply btn bg-gradient-to-br from-brand-600 to-brand-700 text-white hover:from-brand-700 hover:to-brand-800 active:from-brand-800 active:to-brand-900 shadow-soft;
   }
   .btn-ghost {
     @apply btn bg-slate-100 text-slate-700 hover:bg-slate-200;
@@ -71,7 +72,10 @@
            transition hover:bg-brand-50 hover:text-brand-700 cursor-pointer;
   }
   .nav-item-active {
-    @apply bg-brand-600 text-white hover:bg-brand-600 hover:text-white shadow-soft;
+    @apply bg-gradient-to-l from-brand-600 to-brand-700 text-white hover:from-brand-700 hover:to-brand-700 hover:text-white shadow-soft;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-xs font-extrabold;
   }
   .table-wrap {
     @apply w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white;
@@ -80,7 +84,7 @@
     @apply w-full text-right text-sm border-collapse min-w-[640px];
   }
   .tbl thead th {
-    @apply bg-slate-50 text-slate-500 font-bold text-xs px-3 py-3 border-b border-slate-200 whitespace-nowrap sticky top-0;
+    @apply bg-slate-50 text-slate-500 font-bold text-xs px-3 py-3 border-b border-slate-200 whitespace-nowrap;
   }
   .tbl tbody td {
     @apply px-3 py-2.5 border-b border-slate-100 text-slate-700;
@@ -95,13 +99,19 @@
 }
 
 @media print {
+  @page { margin: 12mm; }
   body {
     background: #fff !important;
     background-image: none !important;
   }
   .no-print { display: none !important; }
   .print-area { box-shadow: none !important; border: none !important; }
-  .card { box-shadow: none !important; }
+  .card { box-shadow: none !important; border-color: #e2e8f0 !important; }
+  /* إزالة التثبيت أثناء الطباعة حتى لا يتراكب رأس الجدول مع الصفوف */
+  .tbl thead th { position: static !important; }
+  .table-wrap { overflow: visible !important; border: none !important; }
+  .tbl { min-width: 0 !important; }
+  main { padding: 0 !important; }
 }
 
 .slide-16-9 {

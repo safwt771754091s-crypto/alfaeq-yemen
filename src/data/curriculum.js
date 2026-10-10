@@ -32,12 +32,23 @@ export const SECONDARY_SECTIONS = [
 
 const ORDINALS = {
   1: 'الأول', 2: 'الثاني', 3: 'الثالث', 4: 'الرابع', 5: 'الخامس',
-  6: 'السادس', 7: 'السابع', 8: 'الثامن', 9: 'التاسع',
-  10: 'العاشر', 11: 'الحادي عشر', 12: 'الثاني عشر'
+  6: 'السادس', 7: 'السابع', 8: 'الثامن', 9: 'التاسع'
+};
+// في اليمن تُسمّى صفوف المرحلة الثانوية: أول/ثاني/ثالث ثانوي
+const SECONDARY_ORDINALS = { 10: 'الأول', 11: 'الثاني', 12: 'الثالث' };
+const NUMBER_ORDINALS = {
+  1: 'الأول', 2: 'الثاني', 3: 'الثالث', 4: 'الرابع', 5: 'الخامس', 6: 'السادس',
+  7: 'السابع', 8: 'الثامن', 9: 'التاسع', 10: 'العاشر', 11: 'الحادي عشر', 12: 'الثاني عشر'
 };
 
 export function gradeName(n) {
+  if (n >= 10) return `${SECONDARY_ORDINALS[n] || n} ثانوي`;
   return `الصف ${ORDINALS[n] || n}`;
+}
+
+// الاسم الرسمي بالأرقام (يُستخدم كوصف مكمّل)
+export function gradeOfficial(n) {
+  return `الصف ${NUMBER_ORDINALS[n] || n}`;
 }
 
 export function gradeStage(n) {
@@ -55,8 +66,17 @@ export function gradeCycle(n) {
 export const GRADES = Array.from({ length: 12 }, (_, i) => i + 1).map((n) => ({
   n,
   name: gradeName(n),
+  official: gradeOfficial(n),
   stage: gradeStage(n).id,
-  cycle: gradeCycle(n)
+  cycle: gradeCycle(n),
+  // وصف واضح يجمع الاسم الدارج والرسمي (يُستخدم في القوائم المنسدلة)
+  label: n >= 10 ? `${gradeName(n)} (${gradeOfficial(n)})` : `${gradeName(n)} — ${gradeCycle(n)}`
+}));
+
+// تجميع الصفوف حسب المرحلة — يُستخدم في مجموعات القوائم المنسدلة
+export const GRADES_BY_STAGE = STAGES.map((stage) => ({
+  stage,
+  grades: GRADES.filter((g) => stage.grades.includes(g.n))
 }));
 
 // ================= المواد الدراسية =================

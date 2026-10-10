@@ -8,6 +8,7 @@ import { download } from '../lib/utils.js';
 export default function Settings() {
   const { profile, saveProfile, backup, restore, wipe, classes, students, lessons, notebooks, presentations, quizzes, assessments, certificates } = useApp();
   const toast = useToast();
+  const isNative = typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
   const [form, setForm] = useState(profile);
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [restoreOpen, setRestoreOpen] = useState(false);
@@ -41,6 +42,22 @@ export default function Settings() {
     classes: classes.length, students: students.length, lessons: lessons.length,
     notebooks: notebooks.length, presentations: presentations.length, quizzes: quizzes.length,
     assessments: assessments.length, certificates: certificates.length
+  };
+
+  // إفراغ الذاكرة المؤقتة للـ Service Worker ثم إعادة التحميل — دون المساس ببيانات LocalStorage
+  const hardRefresh = async () => {
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      if (window.caches) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch { /* تجاهل */ }
+    toast.push('تم التحديث — جارٍ إعادة التحميل');
+    setTimeout(() => window.location.reload(), 600);
   };
 
   return (
@@ -86,6 +103,27 @@ export default function Settings() {
               <button className="btn-danger" onClick={() => setConfirmWipe(true)}><Icon.Trash size={18} /> حذف كل البيانات</button>
             </div>
           </Card>
+
+          <Card className="p-5">
+            <div className="section-title mb-4"><Icon.Refresh size={18} /> تحديث المنصة</div>
+            <p className="text-sm text-slate-500 font-bold leading-relaxed mb-3">
+              إن لم تظهر آخر التحديثات، اضغط الزر لإفراغ الذاكرة المؤقتة وإعادة تحميل المنصة بأحدث إصدار. بياناتك لن تُحذف.
+            </p>
+            <button className="btn-outline" onClick={hardRefresh}><Icon.Refresh size={18} /> إعادة تحميل أحدث إصدار</button>
+          </Card>
+
+          {!isNative && (
+          <Card className="p-5">
+            <div className="section-title mb-4"><Icon.Download size={18} /> تطبيق الأندرويد</div>
+            <p className="text-sm text-slate-500 font-bold leading-relaxed mb-3">
+              نزّل تطبيق المنصة على جوالك واعمل به دون إنترنت. بعد التنزيل افتح الملف ثم اسمح بـ«تثبيت من هذا المصدر».
+            </p>
+            <a className="btn-primary inline-flex" href="./smart-teacher.apk" download="منصة-المعلم-الذكية.apk">
+              <Icon.Download size={18} /> تنزيل تطبيق الأندرويد (APK)
+            </a>
+            <p className="text-xs text-slate-400 font-bold mt-2">الإصدار 1.0 — أندرويد 5.1 فأحدث — الحجم ~3 م.ب</p>
+          </Card>
+          )}
 
           <Card className="p-5">
             <div className="section-title mb-4"><Icon.Info size={18} /> حول المنصة</div>

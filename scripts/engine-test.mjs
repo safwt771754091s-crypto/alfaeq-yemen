@@ -2,7 +2,7 @@
 // التشغيل: npm test
 import { generateLessonPlan, generateSlides, slidesToMarkdown, slidesToPptx } from '../src/lib/lessonEngine.js';
 import { analyzeClass, gradeQuestion, gradePaper, parseStudentsCsv, generateSampleQuiz } from '../src/lib/gradingEngine.js';
-import { estimateLabel, subjectsForGrade, getUnits, getLessons, GRADES } from '../src/data/curriculum.js';
+import { estimateLabel, subjectsForGrade, getUnits, getLessons, GRADES, GRADES_BY_STAGE, gradeName, gradeOfficial } from '../src/data/curriculum.js';
 import { buildNotebook, buildWeeklyPlan, buildCoverage, notebookStats, notebookToMarkdown, notebookToCsv, termName } from '../src/lib/notebookEngine.js';
 import { pct, arabicNumber, slugify, lastNDates, normalizeArabic } from '../src/lib/utils.js';
 import { hashPin, randomSalt } from '../src/lib/storage.js';
@@ -13,6 +13,14 @@ const ok = (cond, msg) => { if (cond) pass++; else { fail++; console.log('FAIL:'
 
 // --- المنهج اليمني ---
 ok(GRADES.length === 12, 'الصفوف من 1 إلى 12');
+ok(gradeName(9) === 'الصف التاسع', 'اسم الصف التاسع');
+ok(gradeName(12) === 'الثالث ثانوي', 'تسمية الصف الثاني عشر «الثالث ثانوي»');
+ok(gradeName(10) === 'الأول ثانوي', 'تسمية الصف العاشر «الأول ثانوي»');
+ok(gradeName(11) === 'الثاني ثانوي', 'تسمية الصف الحادي عشر «الثاني ثانوي»');
+ok(gradeOfficial(12) === 'الصف الثاني عشر', 'الاسم الرسمي للصف الثاني عشر');
+ok(GRADES.find((g) => g.n === 12).label.includes('الثالث ثانوي'), 'وصف الصف الثاني عشر في القوائم');
+ok(GRADES_BY_STAGE.length === 3, 'تجميع الصفوف في ثلاث مراحل');
+ok(GRADES_BY_STAGE[2].grades.length === 3, 'المرحلة الثانوية تضم 3 صفوف');
 for (const g of GRADES) ok(subjectsForGrade(g.n).length > 0, 'مواد للصف ' + g.n);
 ok(getUnits(9, 'math').length > 0, 'وحدات الرياضيات للصف التاسع');
 ok(getUnits(12, 'physics').length > 0, 'وحدات الفيزياء للصف الثاني عشر');

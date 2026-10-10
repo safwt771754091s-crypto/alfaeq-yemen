@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { Card, SectionHeader, Field, EmptyState, Modal, useToast, Confirm } from '../components/UI.jsx';
 import { useApp } from '../state/store.jsx';
-import { GRADES, SECONDARY_SECTIONS, SUBJECTS, subjectsForGrade, gradeName } from '../data/curriculum.js';
+import { GRADES_BY_STAGE, SECONDARY_SECTIONS, SUBJECTS, subjectsForGrade, gradeName } from '../data/curriculum.js';
 import { parseStudentsCsv } from '../lib/gradingEngine.js';
 import { download, slugify } from '../lib/utils.js';
 
@@ -166,7 +166,11 @@ export default function Classes({ go }) {
           <div className="grid sm:grid-cols-2 gap-4">
             <Field label="الصف الدراسي">
               <select className="input" value={form.grade} onChange={(e) => set('grade', Number(e.target.value))}>
-                {GRADES.map((g) => <option key={g.n} value={g.n}>{g.name} — {g.cycle}</option>)}
+                {GRADES_BY_STAGE.map(({ stage, grades }) => (
+                      <optgroup key={stage.id} label={stage.short}>
+                        {grades.map((g) => <option key={g.n} value={g.n}>{g.label}</option>)}
+                      </optgroup>
+                    ))}
               </select>
             </Field>
             <Field label="المادة الأساسية">

@@ -5,3 +5,19 @@ dist-ssr/
 .DS_Store
 .vite/
 *.log
+
+# Android build artifacts
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/capacitor-cordova-android-plugins/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+
+# Distribution binaries and signing secrets (never commit)
+download/
+dist/*.apk
+*.apk
+*.keystore
+*.jks

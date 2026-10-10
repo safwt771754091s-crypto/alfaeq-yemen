@@ -15,7 +15,7 @@ export default defineConfig({
         description: 'منصة رقمية متكاملة للمعلم اليمني — تحضير الدروس، العروض التقديمية، التصحيح الذكي، والسجلات المدرسية',
         lang: 'ar',
         dir: 'rtl',
-        theme_color: '#0d6e5f',
+        theme_color: '#0f766e',
         background_color: '#f8fafc',
         display: 'standalone',
         orientation: 'portrait',
@@ -26,8 +26,20 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        navigateFallback: 'index.html'
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,woff,ttf,ico}'],
+        navigateFallback: 'index.html',
+        clientsClaim: true,
+        skipWaiting: true,
+        cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            // الشبكة أولاً لصفحات التنقّل حتى تظهر آخر نسخة فور توفر الإنترنت،
+            // مع الرجوع للنسخة المخزّنة عند انقطاعه (عمل دون اتصال).
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: { cacheName: 'alfaeq-pages', networkTimeoutSeconds: 4 }
+          }
+        ]
       }
     })
   ],

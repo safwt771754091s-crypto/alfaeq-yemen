@@ -60,7 +60,21 @@ export const Icon = {
   Lock: (p) => <Svg {...p}><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /><path d="M12 15v2" /></Svg>,
   Key: (p) => <Svg {...p}><circle cx="8" cy="15" r="4" /><path d="M11 12 20 3" /><path d="M17 6l2 2" /><path d="M15 8l2 2" /></Svg>,
   LogOut: (p) => <Svg {...p}><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" /><path d="M10 12h10" /><path d="M13 9l3 3-3 3" /></Svg>,
-  Crown: (p) => <Svg {...p}><path d="M4 18h16" /><path d="M4 18 3 7l5 4 4-7 4 7 5-4-1 11" /></Svg>
+  Crown: (p) => <Svg {...p}><path d="M4 18h16" /><path d="M4 18 3 7l5 4 4-7 4 7 5-4-1 11" /></Svg>,
+  Library: (p) => <Svg {...p}><path d="M5 3h3v18H5z" /><path d="M10.5 3h3v18h-3z" /><path d="m16 4 3 .8L17.4 21l-3-.8z" /><path d="M3 21h18" /></Svg>,
+  Palette: (p) => <Svg {...p}><path d="M12 3a9 9 0 0 0 0 18c1.4 0 2-.9 2-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-3.9-4-7.2-9-7.2z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10.5" cy="7.5" r="1" /><circle cx="15" cy="7.5" r="1" /><circle cx="17.5" cy="11" r="1" /></Svg>,
+  Bell: (p) => <Svg {...p}><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6z" /><path d="M10 19a2 2 0 0 0 4 0" /></Svg>,
+  Message: (p) => <Svg {...p}><path d="M4 5h16v11H9l-5 4z" /><path d="M8 9h8M8 12h5" /></Svg>,
+  GraduationCap: (p) => <Svg {...p}><path d="M12 4 2 9l10 5 10-5z" /><path d="M6 11.5V16c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4.5" /><path d="M22 9v5" /></Svg>,
+  Megaphone: (p) => <Svg {...p}><path d="M4 10v4a1 1 0 0 0 1 1h2l9 4V5L7 9H5a1 1 0 0 0-1 1z" /><path d="M7 15v4a1 1 0 0 0 1 1h2v-4" /></Svg>,
+  Gamepad: (p) => <Svg {...p}><rect x="2" y="7" width="20" height="11" rx="4" /><path d="M7 11v4M5 13h4" /><circle cx="16" cy="12" r="1" /><circle cx="18.5" cy="14" r="1" /></Svg>,
+  Folder: (p) => <Svg {...p}><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></Svg>,
+  Image: (p) => <Svg {...p}><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" /><path d="m4 18 5-5 4 4 3-3 4 4" /></Svg>,
+  Send: (p) => <Svg {...p}><path d="M4 12 21 4l-7 17-3-7z" /><path d="M11 14l10-10" /></Svg>,
+  Heart: (p) => <Svg {...p}><path d="M12 20s-7-4.5-7-9.5A4 4 0 0 1 12 7a4 4 0 0 1 7 3.5C19 15.5 12 20 12 20z" /></Svg>,
+  ListChecks: (p) => <Svg {...p}><path d="M4 6h1.5M4 12h1.5M4 18h1.5" /><path d="M9 6h11M9 12h11M9 18h11" /></Svg>,
+  Grid: (p) => <Svg {...p}><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></Svg>,
+  Play: (p) => <Svg {...p}><path d="M7 4l13 8-13 8z" /></Svg>
 };
 
 export default Icon;

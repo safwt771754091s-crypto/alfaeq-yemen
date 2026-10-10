@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { Card, SectionHeader, Field, EmptyState, Tabs, useToast, Confirm } from '../components/UI.jsx';
 import { useApp } from '../state/store.jsx';
-import { GRADES, subjectsForGrade, getLessons } from '../data/curriculum.js';
+import { GRADES_BY_STAGE, subjectsForGrade, getLessons } from '../data/curriculum.js';
 import { generateSlides, slidesToMarkdown, slidesToPptx } from '../lib/lessonEngine.js';
 import { download, downloadBlob, slugify } from '../lib/utils.js';
 
@@ -169,7 +169,11 @@ export default function Presentations({ go, params }) {
                 </Field>
                 <Field label="الصف" required>
                   <select className="input" value={form.grade} onChange={(e) => set('grade', Number(e.target.value))}>
-                    {GRADES.map((g) => <option key={g.n} value={g.n}>{g.name}</option>)}
+                    {GRADES_BY_STAGE.map(({ stage, grades }) => (
+                      <optgroup key={stage.id} label={stage.short}>
+                        {grades.map((g) => <option key={g.n} value={g.n}>{g.label}</option>)}
+                      </optgroup>
+                    ))}
                   </select>
                 </Field>
                 <Field label="عدد الشرائح (تقريبي)">

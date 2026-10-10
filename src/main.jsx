@@ -14,3 +14,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </AppProvider>
   </React.StrictMode>
 );
+
+// تحديث تلقائي: عند توفّر نسخة جديدة من التطبيق (Service Worker) نُعيد التحميل
+// مرة واحدة حتى يرى المعلم آخر تصميم دون أي خطوة يدوية.
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (window.__swReloaded) return;
+    window.__swReloaded = true;
+    window.location.reload();
+  });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}

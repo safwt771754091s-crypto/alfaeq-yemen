@@ -34,26 +34,33 @@ export default function Dashboard({ go }) {
 
   return (
     <div className="space-y-6">
-      {/* ترحيب */}
-      <Card className="p-5 sm:p-6 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-l from-brand-600/5 to-transparent pointer-events-none" />
-        <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
-          <span className="grid place-items-center w-16 h-16 rounded-3xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-soft shrink-0">
+      {/* ترحيب — بطاقة رئيسية بأسلوب المنصة */}
+      <div className="relative overflow-hidden rounded-3xl bg-hero-gradient text-white p-6 sm:p-8 shadow-lg">
+        <span className="absolute -top-16 -left-10 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+        <span className="absolute -bottom-20 right-10 w-64 h-64 rounded-full bg-brand-300/20 blur-3xl pointer-events-none" />
+        <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
+          <span className="grid place-items-center w-16 h-16 rounded-3xl bg-white/15 backdrop-blur text-white shrink-0 ring-1 ring-white/25">
             <Icon.School size={34} />
           </span>
           <div className="grow">
-            <h2 className="text-2xl font-extrabold text-slate-800">
+            <span className="chip bg-white/15 text-white/95 mb-2">🇾🇪 صُنع خصيصاً لمعلم اليمن</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight">
               أهلاً بك{profile.name ? ` أ. ${profile.name}` : ''} 👋
             </h2>
-            <p className="text-slate-500 font-bold mt-1">
-              منصة المعلم الذكية — نظّم تحضيرك، وولّد عروضك، وصحّح وسجّل بذكاء.
+            <p className="text-white/85 font-bold mt-1.5 max-w-2xl">
+              منصة المعلم الذكية — نظّم تحضيرك، وولّد عروضك، وصحّح وسجّل بذكاء، بواجهة عربية أنيقة متوافقة مع المنهج اليمني.
             </p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              <button className="btn bg-white text-brand-800 hover:bg-brand-50 shadow-soft" onClick={() => go('planner')}>
+                <Icon.Sparkles size={18} /> ابدأ التحضير
+              </button>
+              <button className="btn bg-white/15 text-white hover:bg-white/25 ring-1 ring-white/25" onClick={() => go('curriculum')}>
+                <Icon.Book size={18} /> استكشف المنهج اليمني
+              </button>
+            </div>
           </div>
-          <button className="btn-primary" onClick={() => go('planner')}>
-            <Icon.Sparkles size={18} /> ابدأ التحضير
-          </button>
         </div>
-      </Card>
+      </div>
 
       {/* إحصاءات */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

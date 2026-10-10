@@ -14,7 +14,16 @@ const KEYS = {
   assessments: 'assessments',
   attendance: 'attendance',
   certificates: 'certificates',
-  activity: 'activity'
+  activity: 'activity',
+  library: 'library',
+  designs: 'designs',
+  timetable: 'timetable',
+  reminders: 'reminders',
+  community: 'community',
+  messages: 'messages',
+  training: 'training',
+  announcements: 'announcements',
+  followups: 'followups'
 };
 
 const DEFAULT_PROFILE = {
@@ -32,6 +41,24 @@ function usePersistent(key, initial) {
     saveKey(key, value);
   }, [key, value]);
   return [value, setValue];
+}
+
+// مجموعة مُخزّنة مع عمليات الإضافة/التعديل/الحذف — تُستخدم للمكتبة والجدول والإشعارات وغيرها
+function useCollection(key, logActivity, label) {
+  const [items, setItems] = usePersistent(key, []);
+  const add = useCallback((item) => {
+    const row = { id: uid(key.slice(0, 3)), createdAt: new Date().toISOString(), ...item };
+    setItems((prev) => [row, ...prev]);
+    if (label) logActivity(`${label}: ${item.title || item.name || ''}`.trim());
+    return row;
+  }, [key, setItems, logActivity, label]);
+  const update = useCallback((id, patch) => {
+    setItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+  }, [setItems]);
+  const remove = useCallback((id) => {
+    setItems((prev) => prev.filter((x) => x.id !== id));
+  }, [setItems]);
+  return { items, add, update, remove };
 }
 
 export function AppProvider({ children }) {
@@ -53,6 +80,18 @@ export function AppProvider({ children }) {
       ...prev
     ].slice(0, 40));
   }, [setActivity]);
+
+  // ===== المجموعات الجديدة (مكتبة، استوديو، جدول، إشعارات، مجتمع، رسائل، تدريب، إعلانات، متابعة) =====
+  const library = useCollection(KEYS.library, logActivity, 'مورد مكتبة');
+  const designs = useCollection(KEYS.designs, logActivity, 'تصميم');
+  const timetable = useCollection(KEYS.timetable, logActivity, 'حصة جدول');
+  const reminders = useCollection(KEYS.reminders, logActivity, 'إشعار');
+  const community = useCollection(KEYS.community, logActivity, 'منشور مجتمع');
+  const messages = useCollection(KEYS.messages, logActivity, 'رسالة');
+  const training = useCollection(KEYS.training, logActivity, 'دورة تدريبية');
+  const announcements = useCollection(KEYS.announcements, logActivity, 'إعلان');
+  const followups = useCollection(KEYS.followups, logActivity, 'متابعة');
+
 
   // ===== الملف الشخصي =====
   const saveProfile = useCallback((p) => {
@@ -242,6 +281,7 @@ export function AppProvider({ children }) {
     attendance, setAttendanceStatus, markAllAttendance,
     certificates, addCertificate, deleteCertificate,
     activity, logActivity,
+    library, designs, timetable, reminders, community, messages, training, announcements, followups,
     backup, restore, wipe
   }), [
     profile, saveProfile, classes, addClass, updateClass, deleteClass,
@@ -253,7 +293,9 @@ export function AppProvider({ children }) {
     assessments, addAssessment, updateAssessment, deleteAssessment, setScore,
     attendance, setAttendanceStatus, markAllAttendance,
     certificates, addCertificate, deleteCertificate,
-    activity, logActivity, backup, restore, wipe
+    activity, logActivity,
+    library, designs, timetable, reminders, community, messages, training, announcements, followups,
+    backup, restore, wipe
   ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
