@@ -15,7 +15,7 @@ cd /workspace/project && npm test        # node scripts/engine-test.mjs
 npm run build                            # vite build + PWA generateSW
 npm run preview -- --host 0.0.0.0 --port 12000   # live preview (already running)
 ```
-Baseline: **79 tests pass**, web build OK (precache 11 entries).
+Baseline: **114 tests pass**, web build OK (precache entries in PWA SW).
 Live URL: https://work-1-cckulonssjrajkcv.prod-runtime.all-hands.dev/ (port 12000).
 
 ## Design language (user-directed)
@@ -35,6 +35,7 @@ unauthenticated users), and the React dashboard is the app.
   SUBJECTS_BY_GRADE, CURRICULUM units keyed "subjectId:grade", getUnits/getLessons,
   estimateLabel (Yemeni grading, PASS_MARK=50).
 - `src/lib/lessonEngine.js` — generateLessonPlan + generateSlides + PPTX/Markdown export.
+- `src/lib/illustrations.js` — offline SVG illustrations (topicIllustration) + subject examples (topicExamples).
 - `src/lib/notebookEngine.js` — buildNotebook (weekly plan + coverage + sample plan),
   notebookToMarkdown/Csv, TERMS.
 - `src/lib/gradingEngine.js` — analyzeClass, gradeQuestion, gradePaper, sample quiz.
@@ -90,7 +91,7 @@ unauthenticated users), and the React dashboard is the app.
 - Signed release APK (~1.5 MB after R8, `ye.teacher.smart`, minSdk 22). Permanent:
   `releases/latest/download/smart-teacher.apk` (and `.zip`, ~1.2 MB). The Settings +
   landing download cards link both, plus the Pages mirror.
-  **v1.4** is current. R8 enabled in `android/app/build.gradle` (`minifyEnabled true`,
+  **v1.5** is current (images+examples). R8 enabled in `android/app/build.gradle` (`minifyEnabled true`,
   `shrinkResources true`, `proguard-android-optimize.txt`) cut classes.dex 6.2→0.86 MB
   (3.3→1.5 MB APK). Capacitor ships its own consumer keep rules, so R8 is safe.
   Bump `versionCode`/`versionName` in `android/app/build.gradle` AND `APP_VERSION`
@@ -99,6 +100,17 @@ unauthenticated users), and the React dashboard is the app.
   NOTE: the local shell has NO `zip` — use `python3 -c "import zipfile;..."`. HARDENING
   TODO: release signing still uses default passwords (store/key `teacher123`,
   alias `teacher`) from the tracked keystore — move to repo secrets before public ship.
+- **CI APK build is BROKEN (v1.5)**: `android-actions/setup-android@v3` fails on the
+  runner (`sdkmanager tools` package removed → step aborts). Replaced it with a plain
+  shell step using the preinstalled SDK, but the NEXT blocker is the **keystore**:
+  `android/app/alfaeq-teacher.keystore` is gitignored so CI has no signing key
+  (`Keystore file ... not found for signing config 'release'`). To fix: base64 the
+  keystore into a repo secret + `KEYSTORE_PASSWORD`/`KEY_ALIAS`/`KEY_PASSWORD`, and
+  have CI decode it before gradle. Meanwhile **build the APK locally** (SDK at
+  `/workspace/tools/android-sdk`, JDK at `/workspace/tools/jdk-17.0.20.1+1`):
+  `ANDROID_HOME=/workspace/tools/android-sdk JAVA_HOME=/workspace/tools/jdk-17.0.20.1+1
+  PATH=$JAVA_HOME/bin:$PATH npx cap sync android && (cd android && ./gradlew assembleRelease --no-daemon)`
+  then `gh release create <tag> <apk> <zip>` (a manual release supersedes the CI one).
 - **`vite build` wipes `dist/`** — re-copy the APK into `dist/` after any build.
 - Keystore `android/app/alfaeq-teacher.keystore` is a secret; gitignored, never commit.
 
