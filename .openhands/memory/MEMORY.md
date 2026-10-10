@@ -43,8 +43,8 @@ unauthenticated users), and the React dashboard is the app.
 - `src/state/store.jsx` — useApp() global store; `usePersistent(key, initial)` helper.
   Adding a collection = add to KEYS + useState + CRUD + context value AND deps array.
 - `src/state/auth.jsx` — **useAuth()** = the auth/permissions provider (replaced the
-  old `owner.jsx`). Exports `APP_VERSION`, fixed `OWNER` (name صفوت محمد عبدالعزيز
-  البريهي, login/pin `safwt`), `PERMISSION_GROUPS`/`ALL_PERMISSIONS`,
+  old `owner.jsx`). Exports `APP_VERSION`, fixed `OWNER` (username `safwt`,
+  display name 'مالك المنصة' — the personal name was removed), `PERMISSION_GROUPS`/`ALL_PERMISSIONS`,
   `DEFAULT_TEACHER_PERMISSIONS` (all except `users`). Context:
   `{ isAuthed, currentUser, owner, isOwner, can, logout, login, register, users,
   updateUser, changeOwnPin }`. Session in LocalStorage `users` + session flag.
