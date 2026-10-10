@@ -8,6 +8,7 @@ import { download } from '../lib/utils.js';
 
 const REPO_URL = 'https://github.com/safwt771754091s-crypto/alfaeq-yemen';
 const APK_URL = `${REPO_URL}/releases/latest/download/smart-teacher.apk`;
+const APK_URL_PAGES = 'https://safwt771754091s-crypto.github.io/alfaeq-yemen/smart-teacher.apk';
 
 export default function Settings() {
   const { profile, saveProfile, backup, restore, wipe, classes, students, lessons, notebooks, presentations, quizzes, assessments, certificates } = useApp();
@@ -119,17 +120,22 @@ export default function Settings() {
 
           {!isNative && (
           <Card className="p-5">
-            <div className="section-title mb-4"><Icon.Download size={18} /> تطبيق الأندرويد</div>
+            <div className="section-title mb-4"><Icon.Download size={18} /> تطبيق الأندرويد (يعمل بدون إنترنت)</div>
             <p className="text-sm text-slate-500 font-bold leading-relaxed mb-3">
-              نزّل تطبيق المنصة على جوالك واعمل به دون إنترنت. بعد التنزيل افتح الملف ثم اسمح بـ«تثبيت من هذا المصدر».
+              نزّل تطبيق المنصة على جوالك واعمل به <b>دون إنترنت</b> — كل الملفات مدمجة داخل التطبيق. بعد التنزيل افتح الملف ثم اسمح بـ«تثبيت من هذا المصدر».
             </p>
             <a className="btn-primary inline-flex" href={APK_URL} target="_blank" rel="noreferrer">
               <Icon.Download size={18} /> تنزيل تطبيق الأندرويد (APK)
             </a>
-            <a className="btn-outline inline-flex mr-2 mt-2" href={REPO_URL} target="_blank" rel="noreferrer">
-              <Icon.Library size={18} /> مستودع التطبيق على GitHub
-            </a>
-            <p className="text-xs text-slate-400 font-bold mt-2">الإصدار {APP_VERSION} — أندرويد 5.1 فأحدث — الحجم ~3 م.ب</p>
+            <div className="flex gap-2 flex-wrap mt-2">
+              <a className="btn-outline inline-flex" href={APK_URL_PAGES} target="_blank" rel="noreferrer">
+                <Icon.Library size={18} /> رابط بديل للتنزيل
+              </a>
+              <a className="btn-outline inline-flex" href={REPO_URL} target="_blank" rel="noreferrer">
+                <Icon.Library size={18} /> مستودع التطبيق على GitHub
+              </a>
+            </div>
+            <p className="text-xs text-slate-400 font-bold mt-2">الإصدار {APP_VERSION} — أندرويد 5.1 فأحدث — الحجم ~3.3 م.ب</p>
           </Card>
           )}
 
