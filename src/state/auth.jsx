@@ -14,7 +14,12 @@ export const OWNER = {
   name: 'مالك المنصة',
   role: 'owner',
   roleLabel: 'مالك المنصة',
-  defaultPin: 'safwt'
+  defaultPin: 'safwt',
+  email: 'Safwt771754091s@gmail.com',
+  phone: '+967 783488 282',
+  whatsapp: '967783488282',
+  location: 'اليمن — نخدم جميع المحافظات والمدن',
+  replyHours: 'يومياً من 9 صباحاً حتى 5 مساءً'
 };
 
 // ===== مجموعات الصلاحيات (مفتاح الصلاحية = معرّف الصفحة في التنقل) =====
@@ -41,8 +46,8 @@ function seedOwner() {
     roleLabel: OWNER.roleLabel,
     title: 'مالك المنصة',
     school: '',
-    email: '',
-    phone: '',
+    email: OWNER.email,
+    phone: OWNER.phone,
     subject: '',
     salt,
     pinHash: hashPin(OWNER.defaultPin, salt),

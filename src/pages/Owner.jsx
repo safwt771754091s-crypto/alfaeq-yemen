@@ -18,8 +18,10 @@ function OwnerCard({ owner }) {
             <span className="chip bg-sand-50 text-sand-700"><Icon.Shield size={14} /> {owner.roleLabel}</span>
             <span className="chip bg-slate-100 text-slate-500">حساب ثابت</span>
           </div>
-          <div className="text-sm text-slate-500 font-bold mt-1">
-            {owner.school ? `المدرسة / الجهة: ${owner.school}` : 'الحساب الرئيسي الثابت للمنصة'}
+          <div className="text-sm text-slate-500 font-bold mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+            {owner.email && <a href={`mailto:${owner.email}`} dir="ltr" className="hover:text-brand-700">📧 {owner.email}</a>}
+            {owner.phone && <a href={`https://wa.me/967783488282`} target="_blank" rel="noreferrer" dir="ltr" className="hover:text-brand-700">📱 {owner.phone}</a>}
+            {owner.school && <span>🏫 {owner.school}</span>}
           </div>
           <div className="text-xs text-slate-400 font-bold mt-0.5">
             مالك منصة المعلم الذكية — هذا الحساب موجود دائماً ولا يمكن حذفه
