@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { generateLessonPlan } from '../lib/lessonEngine.js';
 import { SUBJECTS, gradeName, subjectsForGrade } from '../data/curriculum.js';
+import { OWNER } from '../state/auth.jsx';
 
 const NAV_LINKS = [
   { href: '#features', label: 'المميزات' },
@@ -516,7 +517,7 @@ export default function Landing({ onStart }) {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-3">
               <div className="card p-4 flex items-center gap-3 dark:bg-white/5 dark:border-white/10"><span className="text-2xl">📍</span><div><b className="block text-sm text-slate-800 dark:text-white">الموقع</b><span className="text-xs text-slate-400 font-bold">اليمن — نخدم جميع المحافظات والمدن</span></div></div>
-              <div className="card p-4 flex items-center gap-3 dark:bg-white/5 dark:border-white/10"><span className="text-2xl">📧</span><div><b className="block text-sm text-slate-800 dark:text-white">البريد الإلكتروني</b><a href="mailto:Safwt771754091s@gmail.com" dir="ltr" className="text-xs text-slate-400 font-bold hover:text-brand-700">Safwt771754091s@gmail.com</a></div></div>
+              <div className="card p-4 flex items-center gap-3 dark:bg-white/5 dark:border-white/10"><span className="text-2xl">✉️</span><div><b className="block text-sm text-slate-800 dark:text-white">البريد الإلكتروني</b><a href="mailto:Safwt771754091s@gmail.com" dir="ltr" className="text-xs text-slate-400 font-bold hover:text-brand-700">Safwt771754091s@gmail.com</a></div></div>
               <div className="card p-4 flex items-center gap-3 dark:bg-white/5 dark:border-white/10"><span className="text-2xl">📱</span><div><b className="block text-sm text-slate-800 dark:text-white">واتساب / الهاتف</b><a href="https://wa.me/967783488282" target="_blank" rel="noreferrer" dir="ltr" className="text-xs text-slate-400 font-bold hover:text-brand-700">+967 783488 282</a></div></div>
               <div className="card p-4 flex items-center gap-3 dark:bg-white/5 dark:border-white/10"><span className="text-2xl">🕐</span><div><b className="block text-sm text-slate-800 dark:text-white">أوقات الرد</b><span className="text-xs text-slate-400 font-bold">يومياً من 9 صباحاً حتى 5 مساءً</span></div></div>
             </div>
@@ -562,6 +563,9 @@ function ContactForm() {
   const [f, setF] = useState({ name: '', contact: '', msg: '' });
   const submit = (e) => {
     e.preventDefault();
+    const text = `رسالة من منصة المعلم الذكية\nالاسم: ${f.name}\nوسيلة التواصل: ${f.contact}\n\n${f.msg}`;
+    const target = `https://wa.me/${OWNER.whatsapp}?text=${encodeURIComponent(text)}`;
+    window.open(target, '_blank', 'noopener');
     setSent(true);
     setF({ name: '', contact: '', msg: '' });
   };
@@ -572,8 +576,11 @@ function ContactForm() {
         <label className="block"><span className="text-xs font-extrabold text-slate-500">البريد أو الهاتف</span><input required className="input mt-1" placeholder="وسيلة التواصل" value={f.contact} onChange={(e) => setF({ ...f, contact: e.target.value })} /></label>
       </div>
       <label className="block"><span className="text-xs font-extrabold text-slate-500">الرسالة</span><textarea required rows={4} className="input mt-1" placeholder="اكتب رسالتك أو استفسارك…" value={f.msg} onChange={(e) => setF({ ...f, msg: e.target.value })} /></label>
-      <button type="submit" className="btn-primary"><Icon.Send size={18} /> إرسال الرسالة ✉️</button>
-      {sent && <p className="text-sm text-emerald-600 font-bold">✅ تم استلام رسالتك، سنتواصل معك قريباً.</p>}
+      <div className="flex flex-wrap gap-2">
+        <button type="submit" className="btn-primary"><Icon.Send size={18} /> إرسال عبر واتساب ✉️</button>
+        <a className="btn-outline" href={`mailto:Safwt771754091s@gmail.com?subject=${encodeURIComponent('رسالة من منصة المعلم الذكية')}&body=${encodeURIComponent(`الاسم: ${f.name}\nوسيلة التواصل: ${f.contact}\n\n${f.msg}`)}`}><Icon.Message size={18} /> إرسال عبر البريد</a>
+      </div>
+      {sent && <p className="text-sm text-emerald-600 font-bold">✅ تم تجهيز رسالتك، سنتواصل معك قريباً.</p>}
     </form>
   );
 }
