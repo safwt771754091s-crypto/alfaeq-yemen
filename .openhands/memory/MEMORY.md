@@ -87,14 +87,18 @@ unauthenticated users), and the React dashboard is the app.
   needs `/workspace/tools/jdk17` (Temurin 17 — Gradle 8.2.1 rejects JDK 21) and
   `/workspace/tools/android-sdk` (cmdline-tools + platform-34 + build-tools 34).
   Exact steps + gotchas in `2026-10-10.md`.
-- Signed release APK (~3.3 MB, `ye.teacher.smart`, minSdk 22). Permanent download:
-  `releases/latest/download/smart-teacher.apk` on the GitHub repo below.
-  **v1.3** (versionCode 3) is the current build (offline + real contact info).
-  v1.1 was the auth/roles build. `gh release create` keeps the file basename, so the
-  asset must be named `smart-teacher.apk`. Fresh assets also 404 ~1–2 min on the CDN.
-  HARDENING TODO: the release signing uses default passwords (store/key `teacher123`,
-  alias `teacher`) from the tracked keystore — should move to repo secrets before
-  public distribution.
+- Signed release APK (~1.5 MB after R8, `ye.teacher.smart`, minSdk 22). Permanent:
+  `releases/latest/download/smart-teacher.apk` (and `.zip`, ~1.2 MB). The Settings +
+  landing download cards link both, plus the Pages mirror.
+  **v1.4** is current. R8 enabled in `android/app/build.gradle` (`minifyEnabled true`,
+  `shrinkResources true`, `proguard-android-optimize.txt`) cut classes.dex 6.2→0.86 MB
+  (3.3→1.5 MB APK). Capacitor ships its own consumer keep rules, so R8 is safe.
+  Bump `versionCode`/`versionName` in `android/app/build.gradle` AND `APP_VERSION`
+  in `src/state/auth.jsx` together. `gh release create` keeps the file basename, so
+  assets must be named `smart-teacher.apk` / `.zip`. Fresh assets 404 ~1–2 min on CDN.
+  NOTE: the local shell has NO `zip` — use `python3 -c "import zipfile;..."`. HARDENING
+  TODO: release signing still uses default passwords (store/key `teacher123`,
+  alias `teacher`) from the tracked keystore — move to repo secrets before public ship.
 - **`vite build` wipes `dist/`** — re-copy the APK into `dist/` after any build.
 - Keystore `android/app/alfaeq-teacher.keystore` is a secret; gitignored, never commit.
 
