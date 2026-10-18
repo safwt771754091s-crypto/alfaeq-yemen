@@ -31,9 +31,11 @@ import Followups from './pages/Followups.jsx';
 import MathGames from './pages/MathGames.jsx';
 import Users from './pages/Users.jsx';
 import Profile from './pages/Profile.jsx';
+import PlatformQuiz from './pages/PlatformQuiz.jsx';
 
 const NAV = [
   { id: 'dashboard', name: 'لوحة التحكم', icon: Icon.Home, group: 'عام' },
+  { id: 'quiz', name: 'اختبر معرفتك بالمنصة', icon: Icon.CheckCircle, group: 'عام' },
   { id: 'followups', name: 'المتابعة', icon: Icon.ListChecks, group: 'عام' },
   { id: 'messages', name: 'الرسائل', icon: Icon.Message, group: 'عام' },
   { id: 'library', name: 'المكتبة', icon: Icon.Library, group: 'عام' },
@@ -68,6 +70,7 @@ const NAV = [
 
 const PAGES = {
   dashboard: Dashboard,
+  quiz: PlatformQuiz,
   curriculum: Curriculum,
   planner: LessonPlanner,
   notebook: LessonNotebook,
@@ -135,17 +138,30 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
   const online = useOnline();
+  // مسار الصفحات المستقلة عبر الهاش (مثال: #quiz) — صفحة منفصلة لها رابط خاص
+  const [hash, setHash] = useState(() => (typeof window !== 'undefined' ? window.location.hash.replace(/^#/, '') : ''));
+
+  useEffect(() => {
+    const onHash = () => setHash(window.location.hash.replace(/^#/, ''));
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setMenuOpen(false);
-  }, [route]);
+  }, [route, hash]);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  // صفحة مستقلة عن الرئيسية، تُفتح على مسار خاص (#quiz) ولا تحتاج تسجيل دخول.
+  if (hash === 'quiz') {
+    return <PlatformQuiz onHome={() => { window.location.hash = ''; setHash(''); }} />;
+  }
 
   // الصفحة الرئيسية (الهبوط) تظهر أولاً لمن لم يسجّل الدخول
   if (!isAuthed && showLanding) {

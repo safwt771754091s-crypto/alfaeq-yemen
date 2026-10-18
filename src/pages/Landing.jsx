@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { href: '#studio', label: 'الألعاب والتصميم' },
   { href: '#curriculum', label: 'المنهج اليمني' },
   { href: '#faq', label: 'الأسئلة' },
+  { href: '#quiz', label: 'اختبر معرفتك' },
   { href: '#contact', label: 'تواصل' }
 ];
 

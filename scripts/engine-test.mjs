@@ -152,5 +152,18 @@ ok(ALL_TYPES.length === 5, 'خمسة أنواع أسئلة');
 ok(metaOf('arcade').timed === 60, 'سباق الوقت ٦٠ ثانية');
 ok(metaOf('quiz').id === 'quiz', 'استرجاع بيانات اللعبة');
 
+// --- بنك أسئلة «اختبر معرفتك بالمنصة» ---
+import { QUIZ_QUESTIONS, TOTAL_QUESTIONS, EVIDENCE_ANCHORS, QUIZ_META } from '../src/data/platformQuiz.js';
+ok(TOTAL_QUESTIONS >= 10, 'عدد أسئلة المنصة ' + TOTAL_QUESTIONS);
+ok(QUIZ_META.title.length > 0 && QUIZ_META.intro.length > 0, 'عنوان ومقدمة الاختبار');
+for (const q of QUIZ_QUESTIONS) {
+  ok(q.options.length === 4, `السؤال «${q.id}» له 4 خيارات`);
+  ok(Number.isInteger(q.answer) && q.answer >= 0 && q.answer < q.options.length, `فهرس الإجابة صحيح — ${q.id}`);
+  ok(q.evidence && q.evidence.quote.length > 10, `الدليل موجود — ${q.id}`);
+  ok(q.evidence && EVIDENCE_ANCHORS[q.evidence.anchor], `مرساة الدليل صحيحة — ${q.id}`);
+  ok(new Set(q.options).size === q.options.length, `لا تكرار في الخيارات — ${q.id}`);
+}
+ok(QUIZ_QUESTIONS.every((q) => q.evidence.source.length > 0), 'لكل سؤال مصدر للدليل');
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
