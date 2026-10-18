@@ -19,3 +19,36 @@ export function booksForSubject(grade, subjectName) {
   return YEMEN_BOOKS.filter((b) => b.grade === grade && (norm(b.subject).includes(n) || n.includes(norm(b.subject))));
 }
 
+// مطابقة اسم مادة الكتاب مع معرّف المادة في هيكل المنهج (curriculum.js)
+export const SUBJECT_ID = {
+  'القرآن الكريم': 'quran',
+  'التربية الإسلامية': 'islamic',
+  'اللغة العربية': 'arabic',
+  'الرياضيات': 'math',
+  'العلوم': 'science',
+  'الاجتماعيات': 'social',
+  'اللغة الإنجليزية': 'english',
+  'التربية الفنية': 'art',
+  'التربية الرياضية': 'sport',
+  'الحاسوب': 'computer',
+  'التربية المهنية': 'vocational',
+  'الفيزياء': 'physics',
+  'الكيمياء': 'chemistry',
+  'الأحياء': 'biology',
+  'التاريخ': 'history',
+  'الجغرافيا': 'geography',
+  'المواطنة': 'civic',
+  'علم النفس': 'psychology',
+  'الفلسفة وعلم النفس': 'philosophy'
+};
+
+export function subjectIdFor(subjectName) {
+  return SUBJECT_ID[subjectName] || null;
+}
+
+// كتب جهة محدّدة (افتراضياً عدن) لصفّ ومادة معيّنين.
+export function authorityBooks(grade, subjectName, authority = 'aden') {
+  return booksForSubject(grade, subjectName).filter((b) => b.authority === authority);
+}
+
+

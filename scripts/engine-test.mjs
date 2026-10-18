@@ -227,5 +227,108 @@ ok(g1.length > 0, 'كتب الصف الأول موجودة');
 ok(booksForSubject(1, 'الرياضيات').length > 0, 'booksForSubject يطابق مادة الرياضيات');
 ok(booksForSubject(12, 'الفيزياء').length > 0, 'كتب الفيزياء ثالث ثانوي موجودة');
 
+// --- مطابقة مواد الكتب مع معرّفات المنهج + كتب عدن ---
+import { subjectIdFor, authorityBooks } from '../src/data/yemenBooks.js';
+ok(subjectIdFor('الرياضيات') === 'math', 'مطابقة «الرياضيات» ← math');
+ok(subjectIdFor('اللغة العربية') === 'arabic', 'مطابقة «اللغة العربية» ← arabic');
+ok(subjectIdFor('الفيزياء') === 'physics', 'مطابقة «الفيزياء» ← physics');
+ok(subjectIdFor('مادة مجهولة') === null, 'مادة غير معروفة ← null');
+const adenMath7 = authorityBooks(7, 'الرياضيات', 'aden');
+ok(adenMath7.length > 0, 'كتب رياضيات عدن للصف السابع موجودة');
+ok(adenMath7.every((b) => b.authority === 'aden'), 'authorityBooks تُرجع جهة عدن فقط');
+
+// --- محرّك استيراد الكتب: تقطيع الدروس وبناء الوحدات ---
+import { segmentLessons, extractQuestions, tidyHeading, stripPageNo } from '../src/lib/textbookSegmenter.js';
+import { buildUnits, bookIdFor } from '../src/lib/importer.js';
+import { normalizeArabic as normAr, looksReadable } from '../src/lib/pdfExtract.js';
+
+ok(tidyHeading('الوحدة السابعة: مممم 60060000000') === 'الوحدة السابعة', 'تنظيف العنوان من ذيل الأرقام');
+ok(stripPageNo('٧ الوحدة الخامسة') === 'الوحدة الخامسة', 'إزالة رقم الصفحة من بداية السطر');
+ok(normAr('نصّ\uFFFD مقروء') === 'نصّ مقروء', 'إزالة محارف الخطوط المعطوبة');
+ok(looksReadable('هذه فقرة عربية مقروءة تماماً') === true, 'نصّ عربي مقروء');
+ok(looksReadable('≤ Z¼UMLK UOKF« WM−K«') === false, 'طلاسم الخطوط القديمة غير مقروءة');
+ok(looksReadable('www.e-learning-moe.edu.ye') === false, 'رابط التذييل وحده ليس محتوى');
+
+const fakePages = [
+  { page: 1, text: 'مقدمة الكتاب وأهدافه العامة' },
+  { page: 2, text: 'الوحدة الأولى: الجبر\nالدرس الأول: المعادلات\nالمعادلة هي تساوٍ بين طرفين.\nالدرس الثاني: المتباينات\nالمتباينة تعبير رياضي.' },
+  { page: 3, text: 'الوحدة الثانية: الهندسة\nالدرس الأول: المثلثات\nمجموع زوايا المثلث ١٨٠ درجة.' }
+];
+const seg = segmentLessons(fakePages);
+ok(seg.length === 3, 'تقطيع الكتاب إلى 3 دروس (' + seg.length + ')');
+ok(seg[0].title.includes('المعادلات'), 'عنوان الدرس الأول');
+ok(seg[0].unit && seg[0].unit.includes('الأولى'), 'الدرس مرتبط بوحدته');
+ok(seg[1].unit && seg[1].unit.includes('الأولى'), 'الدرس الثاني في الوحدة الأولى');
+ok(seg[2].unit && seg[2].unit.includes('الثانية'), 'الدرس الثالث في الوحدة الثانية');
+ok(seg.every((l) => l.sections.length > 0), 'كل درس له محتوى');
+
+const units = buildUnits(seg);
+ok(units.length === 2, 'بناء وحدتين من الدروس (' + units.length + ')');
+ok(units[0].lessons.length === 2, 'الوحدة الأولى تضم درسين');
+ok(units[1].lessons.length === 1, 'الوحدة الثانية تضم درساً');
+
+const qPages = [{ page: 1, text: 'الدرس الأول: الجمع\nأجب عن الأسئلة الآتية:\n1- ما ناتج جمع ٢+٣؟\n2- أكمل الفراغ:' }];
+const qs = extractQuestions(segmentLessons(qPages)[0].sections);
+ok(qs.length >= 1, 'استخراج أسئلة الكتاب (' + qs.length + ')');
+ok(qs.every((q) => q.question && !q.answer), 'الأسئلة بلا إجابات (مسودّات)');
+
+// \b في JavaScript لا يتحقق بعد حرف عربي — نتحقق أن تعليمة التمرين تُكتشف فعلاً.
+const exPages = [{
+  page: 1,
+  text: [
+    'الدرس الأول: أسرتي',
+    'تدريبات',
+    'أجب عن الأسئلة الآتية:',
+    '١) ما اسم الدرس الأول؟',
+    '٢) لماذا نحب أسرتنا؟ اذكر سببين.',
+    'اختر الإجابة الصحيحة:',
+    '٣) المدرسة هي البيت ......',
+    'أ) الأول',
+    'ب) الثاني',
+    'ج) الثالث',
+    'أجب بصح أو خطأ:',
+    '٤) الفيل حيوان أليف.'
+  ].join('\n')
+}];
+const exQs = extractQuestions(segmentLessons(exPages)[0].sections);
+ok(exQs.length === 4, 'استخراج كل أسئلة التمرين (' + exQs.length + ')');
+const mcqQ = exQs.find((q) => q.type === 'mcq');
+ok(!!mcqQ && mcqQ.options.length === 3, 'سؤال الاختيار مع خياراته الثلاثة');
+ok(exQs.some((q) => q.type === 'tf'), 'سؤال صح/خطأ يُصنَّف tf من تعليمة التمرين');
+ok(exQs.every((q) => q.type !== 'true_false'), 'لا نوع قديم true_false');
+
+// الأسئلة المستخرجة تُرفَق بالوحدات وتُحفظ.
+const uWithQ = buildUnits(segmentLessons(exPages).map((l) => ({ ...l, questions: extractQuestions(l.sections) })));
+ok(uWithQ[0].questions.length === 4, 'الوحدة تحمل أسئلة دروسها (' + uWithQ[0].questions.length + ')');
+
+// كتب RTL قد تُخرج رقم البند والخيار في نهاية السطر بصرياً («....؟(١»، «الأول(أ»).
+const rtlPages = [{
+  page: 1,
+  text: [
+    'الدرس الأول: أسرتي',
+    'تدريبات',
+    'أجب عن الأسئلة الآتية:',
+    'ما اسم الدرس الأول في الوحدة الأولى؟(١',
+    'اختر الإجابة الصحيحة:',
+    'المدرسة هي البيت ......(٤',
+    'الأول(أ',
+    'الثاني(ب',
+    'الثالث(ج',
+    'أجب بصح أو خطأ:',
+    'الفيل حيوان أليف.(٧'
+  ].join('\n')
+}];
+const rtlQs = extractQuestions(segmentLessons(rtlPages)[0].sections);
+ok(rtlQs.length === 3, 'استخراج أسئلة بصيغة RTL (رقم في النهاية) (' + rtlQs.length + ')');
+ok(rtlQs[0].question === 'ما اسم الدرس الأول في الوحدة الأولى؟', 'تنظيف رقم البند من نهاية السؤال');
+const rtlMcq = rtlQs.find((q) => q.type === 'mcq');
+ok(!!rtlMcq && rtlMcq.options.length === 3 && rtlMcq.options[0] === 'أ) الأول', 'خيارات RTL «الأول(أ» ← «أ) الأول»');
+ok(rtlQs.some((q) => q.type === 'tf'), 'سؤال صح/خطأ بصيغة RTL');
+
+const idA = bookIdFor({ authority: 'aden', grade: 7, subject: 'الرياضيات', term: 'first', url: 'https://x/a.pdf' });
+const idB = bookIdFor({ authority: 'aden', grade: 7, subject: 'الرياضيات', term: 'first', url: 'https://x/b.pdf' });
+ok(idA !== idB, 'معرّف الكتاب يفرّق بين الجزء الأول والثاني');
+ok(idA === bookIdFor({ authority: 'aden', grade: 7, subject: 'الرياضيات', term: 'first', url: 'https://x/a.pdf' }), 'معرّف الكتاب ثابت للرابط نفسه');
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

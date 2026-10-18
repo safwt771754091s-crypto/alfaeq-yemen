@@ -28,12 +28,21 @@ fontsCss = fontsCss.replace(/url\(\.\/([^)]+\.(?:woff2?|ttf))\)/g, (m, file) => 
 // 2) باقي CSS
 const assetsDir = join(dist, 'assets');
 const cssFile = readdirSync(assetsDir).find((f) => f.endsWith('.css'));
-const jsFile = readdirSync(assetsDir).find((f) => f.endsWith('.js'));
+// نختار ملف JS الرئيسي (index) لا ملفات مساعدة مثل __vite-browser-external.
+const jsFile = readdirSync(assetsDir).find((f) => /^index-.*\.js$/.test(f)) || readdirSync(assetsDir).find((f) => f.endsWith('.js'));
 if (!cssFile || !jsFile) throw new Error('لم أجد ملفات JS/CSS في dist/assets — شغّل npm run build أولاً');
 let css = readFileSync(join(assetsDir, cssFile), 'utf8');
 
 // 3) JS: نمنع إغلاق وسم السكربت داخل الكود
 let js = readFileSync(join(assetsDir, jsFile), 'utf8').replace(/<\/script/gi, '<\\/script');
+
+// 3b) عامل pdf.js: نضمّنه base64 ليُبنى كـ Blob داخل الملف المكتفي بذاته (عمل دون إنترنت).
+const workerFile = readdirSync(assetsDir).find((f) => /^pdf\.worker.*\.mjs$/.test(f));
+let workerScript = '';
+if (workerFile) {
+  const b64 = readFileSync(join(assetsDir, workerFile)).toString('base64');
+  workerScript = `<script>window.__PDF_WORKER_B64__=${JSON.stringify(b64)};</script>`;
+}
 
 // 4) الأيقونة
 const favicon = readFileSync(join(dist, 'favicon.svg'), 'utf8');
@@ -54,6 +63,7 @@ const html = `<!doctype html>
   </head>
   <body>
     <div id="root"></div>
+    ${workerScript}
     <script type="module">${js}</script>
   </body>
 </html>

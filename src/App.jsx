@@ -38,6 +38,7 @@ import StudentAsk from './pages/StudentAsk.jsx';
 import StudentTimetable from './pages/StudentTimetable.jsx';
 import StudentPractice from './pages/StudentPractice.jsx';
 import StudentBooks from './pages/StudentBooks.jsx';
+import Importer from './pages/Importer.jsx';
 import StudentQuestions from './pages/StudentQuestions.jsx';
 import StudentPortal from './pages/StudentPortal.jsx';
 
@@ -77,6 +78,7 @@ const NAV = [
   { id: 'studentquestions', name: 'أسئلة الطلاب', icon: Icon.ListChecks, group: 'رفيق الطالب' },
   { id: 'studentpractice', name: 'تدريب الطالب', icon: Icon.Sparkles, group: 'رفيق الطالب' },
   { id: 'studentbooks', name: 'مكتبة الكتب', icon: Icon.Book, group: 'رفيق الطالب' },
+  { id: 'importer', name: 'استيراد الكتب', icon: Icon.Upload, group: 'رفيق الطالب' },
 
   { id: 'classes', name: 'الصفوف والطلاب', icon: Icon.Users, group: 'الإعداد' },
   { id: 'users', name: 'المستخدمون والصلاحيات', icon: Icon.Shield, group: 'الإعداد' },
@@ -118,7 +120,8 @@ const PAGES = {
   studenttimetable: StudentTimetable,
   studentquestions: StudentQuestions,
   studentpractice: StudentPractice,
-  studentbooks: StudentBooks
+  studentbooks: StudentBooks,
+  importer: Importer
 };
 
 function useOnline() {
