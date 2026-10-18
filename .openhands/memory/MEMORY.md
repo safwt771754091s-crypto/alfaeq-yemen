@@ -15,7 +15,7 @@ cd /workspace/project && npm test        # node scripts/engine-test.mjs
 npm run build                            # vite build + PWA generateSW
 npm run preview -- --host 0.0.0.0 --port 12000   # live preview (already running)
 ```
-Baseline: **192 tests pass**, web + standalone build OK (PWA SW precache).
+Baseline: **209 tests pass**, web + standalone build OK (PWA SW precache).
 Live URL: https://work-1-cckulonssjrajkcv.prod-runtime.all-hands.dev/ (port 12000).
 
 ## Design language (user-directed)
@@ -129,6 +129,13 @@ unauthenticated users), and the React dashboard is the app.
   `https://safwt771754091s-crypto.github.io/alfaeq-yemen/`.
 - jsDelivr serves repo files but as `text/plain` → NOT usable to render the SPA
   (only good for direct file downloads). Use GitHub Pages for the web app.
+
+## Student companion («رفيق الطالب اليمني»)
+- Public routes (no login, hash-based): `#quiz` (platform MCQ + evidence) and `#student`
+  (student portal: hub/book/ask/timetable). Both also reachable from in-app NAV and Landing.
+- Engines (pure/offline): `bookEngine.js` (page-per-lesson digital book, open by name/page),
+  `voice.js` (Yemeni dialect + Web Speech), `qnaEngine.js` (grounded Q&A → teacher queue).
+- Teacher answers student questions in «أسئلة الطلاب» page; queue in localStorage `st.qna.queue.v1`.
 
 ## Daily logs
 - `2026-10-09.md` — built كراسة التحضير (notebook) + حساب المالك (owner account).
