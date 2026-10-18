@@ -137,6 +137,18 @@ unauthenticated users), and the React dashboard is the app.
   `voice.js` (Yemeni dialect + Web Speech), `qnaEngine.js` (grounded Q&A → teacher queue).
 - Teacher answers student questions in «أسئلة الطلاب» page; queue in localStorage `st.qna.queue.v1`.
 
+## Content sources (see docs/CONTENT-SOURCES.md)
+- Richest source = the account's own repo **`safwt771754091s-crypto/Teacher-Safwat-`
+  (Laravel, Apache-2.0)**: `backend/database/data/yemen_books_all.json` = 275 Yemeni
+  textbook records with direct PDF links (grades 1–12, authorities common/sanaa/aden,
+  hosts `s1.yemen-books.com` + `yemenmanhaj.com`). `yemeni_curriculum.json` there mirrors
+  our own curriculum.js. Also ships Laravel PDF-ingestion agents (`BookImporterAgent`,
+  `CurriculumBuilderAgent`, `SegmentTextbooks`) — reuse later.
+- `mohamedalawdi198-wq/khota-almotafawqeen` and `sarmadalkadasi/quiz9` have **no LICENSE**
+  → attribution-only, non-commercial. Always check a repo's LICENSE before integrating.
+- Integrated: `src/data/yemenBooks.js` (YEMEN_BOOKS + booksForSubject) + `src/data/sourcedContent.js`.
+- Link-check gotcha: use `curl -r 0-2000` (range), not HEAD — some hosts reject HEAD.
+
 ## Daily logs
 - `2026-10-09.md` — built كراسة التحضير (notebook) + حساب المالك (owner account).
 - `2026-10-10.md` — sessions 1-12: reference-design restyle, grade naming, offline
