@@ -15,7 +15,7 @@ cd /workspace/project && npm test        # node scripts/engine-test.mjs
 npm run build                            # vite build + PWA generateSW
 npm run preview -- --host 0.0.0.0 --port 12000   # live preview (already running)
 ```
-Baseline: **114 tests pass**, web build OK (precache entries in PWA SW).
+Baseline: **192 tests pass**, web + standalone build OK (PWA SW precache).
 Live URL: https://work-1-cckulonssjrajkcv.prod-runtime.all-hands.dev/ (port 12000).
 
 ## Design language (user-directed)
