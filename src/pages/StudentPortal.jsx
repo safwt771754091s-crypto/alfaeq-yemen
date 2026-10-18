@@ -5,12 +5,16 @@ import StudentHub from './StudentHub.jsx';
 import StudentBook from './StudentBook.jsx';
 import StudentAsk from './StudentAsk.jsx';
 import StudentTimetable from './StudentTimetable.jsx';
+import StudentPractice from './StudentPractice.jsx';
+import MathGames from './MathGames.jsx';
 import { gradeName } from '../data/curriculum.js';
 
 const TABS = [
   { id: 'hub', name: 'الرئيسية', icon: Icon.Home },
   { id: 'book', name: 'الكتاب الرقمي', icon: Icon.Book },
   { id: 'ask', name: 'اسأل الآن', icon: Icon.Message },
+  { id: 'practice', name: 'تدرّب', icon: Icon.Sparkles },
+  { id: 'games', name: 'ألعاب', icon: Icon.Sparkles },
   { id: 'timetable', name: 'جدولي', icon: Icon.Calendar },
 ];
 
@@ -24,6 +28,8 @@ export default function StudentPortal({ onHome }) {
 
   const body = tab === 'book' ? <StudentBook params={params} />
     : tab === 'ask' ? <StudentAsk />
+    : tab === 'practice' ? <StudentPractice />
+    : tab === 'games' ? <MathGames />
     : tab === 'timetable' ? <StudentTimetable />
     : <StudentHub go={go} />;
 

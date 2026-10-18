@@ -200,5 +200,19 @@ const ansMiss = askQuestion({ question: 'xyzabc nonsensical', grade: 1, subjectI
 ok(ansMiss.needsTeacher === true, 'سؤال غير معروف يُحوّل للمعلم');
 ok(suggestedQuestions('المعادلات').length === 4, 'أربعة أسئلة مقترحة');
 
+// --- المحتوى المنهجي الحقيقي المُجمَّع من مصادر مفتوحة ---
+import { SOURCED_QUESTIONS, SOURCES, SOURCED_UNITS, sourcedUnitsFor } from '../src/data/sourcedContent.js';
+ok(SOURCES.length === 2, 'مصدران موثّقان (خطى المتفوقين + quiz9)');
+ok(SOURCES.every((s) => s.repo && s.url && s.license), 'كل مصدر يحمل نسبة ورخصة');
+ok(SOURCED_QUESTIONS.length === 18, 'بنك أسئلة حقيقي بـ18 سؤالاً');
+ok(SOURCED_QUESTIONS.every((q) => q.options.length === 4), 'كل سؤال له 4 خيارات');
+ok(SOURCED_QUESTIONS.every((q) => q.options.includes(q.answer)), 'الإجابة الصحيحة ضمن الخيارات');
+ok(new Set(SOURCED_QUESTIONS.map((q) => q.prompt)).size === 18, 'لا أسئلة مكررة');
+ok(SOURCED_QUESTIONS.every((q) => q.source === 'quiz9' && q.grade === 9 && q.subjectId === 'math'), 'وسم المصدر والصف والمادة');
+const math12 = getUnits(12, 'math');
+ok(math12.some((u) => u.sourced && u.title.includes('الأعداد المركبة')), 'وحدة «الأعداد المركبة» مدرجة في منهج الرياضيات ثالث ثانوي');
+ok(math12.find((u) => u.sourced).lessons.length === 6, 'الوحدة المصدرية فيها 6 دروس');
+ok(sourcedUnitsFor(12, 'math') && !sourcedUnitsFor(5, 'math'), 'sourcedUnitsFor يخصّ الصف 12 فقط');
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

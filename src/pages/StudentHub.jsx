@@ -25,10 +25,11 @@ export default function StudentHub({ go }) {
   }, [studyLog.items]);
 
   const tiles = [
-    { id: 'studentbook', icon: '📖', title: 'الكتاب الرقمي', text: 'افتح أي درس بالاسم ورقم الصفحة', tone: 'from-sky-400 to-sky-600' },
-    { id: 'studentask', icon: '❓', title: 'اسأل الآن', text: 'سؤال وجواب سريع مع شرح مبسّط', tone: 'from-violet-400 to-violet-600' },
-    { id: 'mathgames', icon: '🎮', title: 'ألعاب تعليمية', text: 'تعلّم والعب في نفس الوقت', tone: 'from-amber-400 to-amber-600' },
-    { id: 'studenttimetable', icon: '🗓️', title: 'جدول الحصص', text: 'حصص اليوم والواجبات', tone: 'from-emerald-400 to-emerald-600' },
+    { id: 'book', icon: '📖', title: 'الكتاب الرقمي', text: 'افتح أي درس بالاسم ورقم الصفحة', tone: 'from-sky-400 to-sky-600' },
+    { id: 'ask', icon: '❓', title: 'اسأل الآن', text: 'سؤال وجواب سريع مع شرح مبسّط', tone: 'from-violet-400 to-violet-600' },
+    { id: 'games', icon: '🎮', title: 'ألعاب تعليمية', text: 'تعلّم والعب في نفس الوقت', tone: 'from-amber-400 to-amber-600' },
+    { id: 'practice', icon: '✨', title: 'تدرّب', text: 'أسئلة حقيقية من المنهج', tone: 'from-fuchsia-400 to-fuchsia-600' },
+    { id: 'timetable', icon: '🗓️', title: 'جدول الحصص', text: 'حصص اليوم والواجبات', tone: 'from-emerald-400 to-emerald-600' },
   ];
 
   return (
@@ -93,7 +94,7 @@ export default function StudentHub({ go }) {
           {subjects.map((s) => (
             <button
               key={s.id}
-              onClick={() => go && go('studentbook', { subjectId: s.id })}
+              onClick={() => go && go('book', { subjectId: s.id })}
               className="rounded-2xl border-2 border-slate-100 bg-white p-4 text-center hover:border-brand-300 transition"
             >
               <div className="text-3xl mb-1">{s.icon}</div>
@@ -127,7 +128,7 @@ export default function StudentHub({ go }) {
             يحتوي كتابك الرقمي على دروس {SUBJECTS[subjects[0]?.id]?.name || 'المادة'} كاملة، مرتّبة وحدةً وحدة،
             ويمكنك فتح أي درس بالاسم أو رقم الصفحة كما في الكتاب الورقي.
           </p>
-          <button onClick={() => go && go('studentbook')} className="btn-primary mt-3">
+          <button onClick={() => go && go('book')} className="btn-primary mt-3">
             <Icon.Book size={18} /> افتح الكتاب
           </button>
         </Card>

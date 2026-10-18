@@ -154,6 +154,11 @@ export default function Curriculum({ go }) {
                           {i + 1}
                         </span>
                         <span className="font-extrabold text-slate-700 text-sm">{u.title}</span>
+                        {u.sourced && (
+                          <span className="chip bg-emerald-100 text-emerald-700" title="محتوى منهجي حقيقي من مصدر موثّق">
+                            موثّق ✓
+                          </span>
+                        )}
                         <span className="mr-auto chip bg-white text-slate-500 border border-slate-200">
                           {u.lessons.length} دروس
                         </span>

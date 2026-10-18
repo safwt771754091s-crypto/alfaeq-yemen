@@ -1,5 +1,6 @@
 // هيكل المنهج اليمني الشامل — وزارة التربية والتعليم
 // المراحل: التعليم الأساسي (1-9) والمرحلة الثانوية (10-12: علمي / أدبي)
+import { SOURCED_UNITS } from './sourcedContent.js';
 
 export const STAGES = [
   {
@@ -364,6 +365,13 @@ function fallbackUnits(grade, subjectId) {
 
 export function getUnits(grade, subjectId) {
   const key = `${subjectId}:${grade}`;
+  // محتوى منهجي حقيقي مُجمَّع من مصادر مفتوحة (إن وُجد) — يُقدَّم أولاً
+  const sourced = SOURCED_UNITS[key];
+  if (sourced) {
+    const withFlag = sourced.map((u) => ({ ...u, sourced: true }));
+    if (CURRICULUM[key]) return [...withFlag, ...CURRICULUM[key]];
+    return withFlag;
+  }
   if (CURRICULUM[key]) return CURRICULUM[key];
   // ابحث عن أقرب صف له نفس المادة لتقديم محتوى أقرب للمنهج
   const gradesWithSubject = Object.keys(CURRICULUM)
