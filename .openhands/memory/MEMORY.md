@@ -15,7 +15,7 @@ cd /workspace/project && npm test        # node scripts/engine-test.mjs
 npm run build                            # vite build + PWA generateSW
 npm run preview -- --host 0.0.0.0 --port 12000   # live preview (already running)
 ```
-Baseline: **209 tests pass**, web + standalone build OK (PWA SW precache).
+Baseline: **262 tests pass**, web + standalone build OK (PWA SW precache).
 Live URL: https://work-1-cckulonssjrajkcv.prod-runtime.all-hands.dev/ (port 12000).
 
 ## Design language (user-directed)
@@ -67,6 +67,31 @@ unauthenticated users), and the React dashboard is the app.
 تواصل: community, announcements, reminders · أنشطة: mathgames ·
 الإعداد: classes, owner, settings. All in `src/pages/*.jsx`, registered in
 `PAGES`/`NAV` in App.jsx.
+
+## Textbook importer («استيراد الكتب», added 2026-10-10)
+- `src/pages/Importer.jsx` — upload a curriculum PDF → browser extract (pdf.js) →
+  segment into units/lessons → save to LocalStorage → merged into `getUnits`.
+- `src/lib/pdfExtract.js` — pdf.js wrapper (`extractPdf`, `looksReadable`,
+  `normalizeArabic`). Worker source is set from `src/lib/pdfWorker.js`; the worker
+  is also base64-embedded by `build-standalone.mjs` for the single-file build.
+- `src/lib/textbookSegmenter.js` — `segmentLessons` (unit/lesson headings) +
+  `extractQuestions` (exercise drafts) + `tidyHeading`/`stripPageNo`.
+- `src/data/importedUnits.js` — LocalStorage ns `smart_teacher_v1:importedUnits`,
+  keyed `grade:subjectId`; stores `lessons` AND `questions` per unit.
+- **CRITICAL GOTCHA — `\b` is ASCII-only in JS**: `\b` never matches after an Arabic
+  letter, so every Arabic keyword regex using `\b` silently fails (this made
+  `extractQuestions` always return 0). Use an Arabic-aware boundary instead:
+  `const AR_B = '(?![\\u0621-\\u064A])'` and build the regex with `new RegExp`.
+- **RTL extraction gotcha**: Arabic PDFs (esp. Chromium-printed) place the item
+  number / option letter at the *visual end* of the line («....؟(١», «الأول(أ»).
+  The extractor handles markers at both ends (`LEAD_NUM`/`TAIL_NUM`, `parseOption`).
+- Question types align with `gradingEngine.QUESTION_TYPES`: `mcq` | `tf` | `essay`.
+  Do NOT emit `true_false` (legacy; grader won't recognize it).
+- Verify: `npm test` (engine) is necessary but NOT sufficient. Do a real browser E2E:
+  headless Chromium + CDP (`--remote-debugging-port`), seed
+  `smart_teacher_v1:users`/`profile` + `sessionStorage auth_session`, click the
+  `.nav-item` whose text is «استيراد الكتب», set `input[type=file]` via
+  `DOM.setFileInputFiles`, then read `localStorage importedUnits`.
 
 ## Conventions / gotchas
 - **Nav is an off-canvas drawer on the physical RIGHT** (closed by default; opened
