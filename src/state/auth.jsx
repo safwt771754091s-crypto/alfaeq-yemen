@@ -28,7 +28,7 @@ export const PERMISSION_GROUPS = [
   { group: 'التخطيط', items: [['curriculum', 'المنهج اليمني'], ['planner', 'التحضير الذكي'], ['notebook', 'كراسة التحضير'], ['presentations', 'العروض التقديمية'], ['timetable', 'الجدول الدراسي']] },
   { group: 'التقييم والسجلات', items: [['grader', 'التصحيح الذكي'], ['gradebook', 'سجل الدرجات'], ['attendance', 'الحضور والغياب'], ['certificates', 'الشهادات'], ['reports', 'التقارير'], ['activity', 'سجل النشاط']] },
   { group: 'تواصل وأنشطة', items: [['community', 'المجتمع'], ['announcements', 'الإعلانات'], ['reminders', 'الإشعارات'], ['mathgames', 'ألعاب الرياضيات']] },
-  { group: 'رفيق الطالب', items: [['studenthub', 'وضع الطالب'], ['studentbook', 'الكتاب الرقمي'], ['studentask', 'اسأل الآن'], ['studenttimetable', 'جدول الطالب'], ['studentpractice', 'تدريب الطالب'], ['studentquestions', 'أسئلة الطلاب']] },
+  { group: 'رفيق الطالب', items: [['studenthub', 'وضع الطالب'], ['studentbook', 'الكتاب الرقمي'], ['studentask', 'اسأل الآن'], ['studenttimetable', 'جدول الطالب'], ['studentpractice', 'تدريب الطالب'], ['studentbooks', 'مكتبة الكتب'], ['studentquestions', 'أسئلة الطلاب']] },
   { group: 'الإعداد', items: [['classes', 'الصفوف والطلاب'], ['users', 'المستخدمون والصلاحيات'], ['settings', 'الإعدادات']] }
 ];
 

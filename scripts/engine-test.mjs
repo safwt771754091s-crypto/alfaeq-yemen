@@ -214,5 +214,18 @@ ok(math12.some((u) => u.sourced && u.title.includes('الأعداد المركب
 ok(math12.find((u) => u.sourced).lessons.length === 6, 'الوحدة المصدرية فيها 6 دروس');
 ok(sourcedUnitsFor(12, 'math') && !sourcedUnitsFor(5, 'math'), 'sourcedUnitsFor يخصّ الصف 12 فقط');
 
+// --- كتالوج كتب المنهج (مصدر موثّق برخصة Apache-2.0) ---
+import { YEMEN_BOOKS, BOOK_SOURCE, booksForSubject, AUTHORITY_LABEL } from '../src/data/yemenBooks.js';
+ok(BOOK_SOURCE.license === 'Apache-2.0', 'كتالوج الكتب من مصدر مرخّص Apache-2.0');
+ok(YEMEN_BOOKS.length >= 270, 'الكتالوج يحوي 270+ كتاباً');
+ok(YEMEN_BOOKS.every((b) => b.url.startsWith('https://')), 'كل رابط كتاب https');
+ok(YEMEN_BOOKS.every((b) => b.grade >= 1 && b.grade <= 12), 'كل كتاب بصف صحيح 1-12');
+ok(YEMEN_BOOKS.every((b) => AUTHORITY_LABEL[b.authority]), 'كل كتاب بجهة معروفة');
+ok(new Set(YEMEN_BOOKS.map((b) => b.url)).size === YEMEN_BOOKS.length, 'لا روابط مكررة');
+const g1 = YEMEN_BOOKS.filter((b) => b.grade === 1);
+ok(g1.length > 0, 'كتب الصف الأول موجودة');
+ok(booksForSubject(1, 'الرياضيات').length > 0, 'booksForSubject يطابق مادة الرياضيات');
+ok(booksForSubject(12, 'الفيزياء').length > 0, 'كتب الفيزياء ثالث ثانوي موجودة');
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

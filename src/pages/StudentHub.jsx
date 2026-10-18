@@ -26,6 +26,7 @@ export default function StudentHub({ go }) {
 
   const tiles = [
     { id: 'book', icon: '📖', title: 'الكتاب الرقمي', text: 'افتح أي درس بالاسم ورقم الصفحة', tone: 'from-sky-400 to-sky-600' },
+    { id: 'books', icon: '📚', title: 'مكتبة الكتب', text: '٢٧٤ كتاباً من المنهج بروابط تحميل', tone: 'from-teal-400 to-teal-600' },
     { id: 'ask', icon: '❓', title: 'اسأل الآن', text: 'سؤال وجواب سريع مع شرح مبسّط', tone: 'from-violet-400 to-violet-600' },
     { id: 'games', icon: '🎮', title: 'ألعاب تعليمية', text: 'تعلّم والعب في نفس الوقت', tone: 'from-amber-400 to-amber-600' },
     { id: 'practice', icon: '✨', title: 'تدرّب', text: 'أسئلة حقيقية من المنهج', tone: 'from-fuchsia-400 to-fuchsia-600' },

@@ -3,6 +3,7 @@ import Icon from '../components/Icon.jsx';
 import { Card, SectionHeader, useToast } from '../components/UI.jsx';
 import { useApp } from '../state/store.jsx';
 import { GRADES, gradeName, subjectsForGrade, SUBJECTS } from '../data/curriculum.js';
+import { booksForSubject } from '../data/yemenBooks.js';
 import { buildBook, flattenPages, openAt, searchLessons } from '../lib/bookEngine.js';
 import { narrationForLesson, speak, stopSpeaking, speechSupported, pickArabicVoice } from '../lib/voice.js';
 
@@ -39,6 +40,7 @@ export default function StudentBook({ params = {} }) {
   }, [grade, subjectId, pages]);
 
   const current = pages[pageIndex] || null;
+  const officialBooks = useMemo(() => booksForSubject(grade, SUBJECTS[subjectId]?.name || ''), [grade, subjectId]);
   // اقتراحات بحث فورية عبر كل مواد الصف
   const searchHits = useMemo(() => {
     if (!nameQuery.trim()) return [];
@@ -155,6 +157,12 @@ export default function StudentBook({ params = {} }) {
         </div>
         <div className="flex flex-wrap gap-2 mt-3">
           <button className="btn-primary" onClick={openByLookup}><Icon.Search size={18} /> افتح</button>
+          {officialBooks.length > 0 && (
+            <a href={officialBooks[0].url} target="_blank" rel="noopener noreferrer"
+              className="btn-ghost border border-emerald-200 text-emerald-700 bg-emerald-50">
+              <Icon.Book size={18} /> الكتاب الرسمي (PDF)
+            </a>
+          )}
           <span className="chip bg-slate-100 text-slate-600 self-center">
             {book.totalLessons} درساً • {book.totalPages} صفحة • {SUBJECTS[subjectId]?.name}
           </span>
