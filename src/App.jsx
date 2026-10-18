@@ -32,6 +32,12 @@ import MathGames from './pages/MathGames.jsx';
 import Users from './pages/Users.jsx';
 import Profile from './pages/Profile.jsx';
 import PlatformQuiz from './pages/PlatformQuiz.jsx';
+import StudentHub from './pages/StudentHub.jsx';
+import StudentBook from './pages/StudentBook.jsx';
+import StudentAsk from './pages/StudentAsk.jsx';
+import StudentTimetable from './pages/StudentTimetable.jsx';
+import StudentQuestions from './pages/StudentQuestions.jsx';
+import StudentPortal from './pages/StudentPortal.jsx';
 
 const NAV = [
   { id: 'dashboard', name: 'لوحة التحكم', icon: Icon.Home, group: 'عام' },
@@ -61,6 +67,12 @@ const NAV = [
   { id: 'reminders', name: 'الإشعارات', icon: Icon.Bell, group: 'تواصل' },
 
   { id: 'mathgames', name: 'ألعاب الرياضيات', icon: Icon.Gamepad, group: 'أنشطة' },
+
+  { id: 'studenthub', name: 'وضع الطالب', icon: Icon.GraduationCap, group: 'رفيق الطالب' },
+  { id: 'studentbook', name: 'الكتاب الرقمي', icon: Icon.Book, group: 'رفيق الطالب' },
+  { id: 'studentask', name: 'اسأل الآن', icon: Icon.Message, group: 'رفيق الطالب' },
+  { id: 'studenttimetable', name: 'جدول الطالب', icon: Icon.Calendar, group: 'رفيق الطالب' },
+  { id: 'studentquestions', name: 'أسئلة الطلاب', icon: Icon.ListChecks, group: 'رفيق الطالب' },
 
   { id: 'classes', name: 'الصفوف والطلاب', icon: Icon.Users, group: 'الإعداد' },
   { id: 'users', name: 'المستخدمون والصلاحيات', icon: Icon.Shield, group: 'الإعداد' },
@@ -95,7 +107,12 @@ const PAGES = {
   followups: Followups,
   users: Users,
   mathgames: MathGames,
-  profile: Profile
+  profile: Profile,
+  studenthub: StudentHub,
+  studentbook: StudentBook,
+  studentask: StudentAsk,
+  studenttimetable: StudentTimetable,
+  studentquestions: StudentQuestions
 };
 
 function useOnline() {
@@ -161,6 +178,10 @@ export default function App() {
   // صفحة مستقلة عن الرئيسية، تُفتح على مسار خاص (#quiz) ولا تحتاج تسجيل دخول.
   if (hash === 'quiz') {
     return <PlatformQuiz onHome={() => { window.location.hash = ''; setHash(''); }} />;
+  }
+  // بوابة الطالب المستقلّة (#student) — تعمل دون تسجيل دخول وتناسب مشاركتها مع الطلاب.
+  if (hash === 'student') {
+    return <StudentPortal onHome={() => { window.location.hash = ''; setHash(''); }} />;
   }
 
   // الصفحة الرئيسية (الهبوط) تظهر أولاً لمن لم يسجّل الدخول

@@ -165,5 +165,40 @@ for (const q of QUIZ_QUESTIONS) {
 }
 ok(QUIZ_QUESTIONS.every((q) => q.evidence.source.length > 0), 'لكل سؤال مصدر للدليل');
 
+// --- الكتاب الرقمي (رفيق الطالب) ---
+import { buildBook, flattenPages, openAt, searchLessons } from '../src/lib/bookEngine.js';
+const bk = buildBook({ grade: 1, subjectId: 'arabic' });
+ok(bk.totalLessons > 0 && bk.totalPages > 0, 'الكتاب يحتوي دروساً وصفحات');
+ok(flattenPages(bk).length === bk.totalPages, 'عدد الصفحات المسطّحة = إجمالي الصفحات');
+const firstPage = openAt(bk, { page: 1 });
+ok(firstPage && firstPage.page === 1, 'فتح الكتاب على الصفحة 1');
+const byName = openAt(bk, { name: 'الحروف' });
+ok(byName && byName.lesson.length > 0, 'فتح الكتاب باسم الدرس');
+ok(searchLessons(bk, 'الحروف').length > 0, 'البحث عن درس بالاسم');
+const bk12 = buildBook({ grade: 12, subjectId: 'math' });
+ok(bk12.totalLessons > 0, 'كتاب الصف الثالث ثانوي (رياضيات)');
+const allPages = flattenPages(bk);
+ok(allPages.every((p) => p.page >= 1 && p.lesson && p.chapter), 'كل صفحة لها رقم ودرس ووحدة');
+
+// --- الشرح الصوتي باللهجة اليمنية ---
+import { toYemeni, narrationForLesson, pickArabicVoice, speechSupported } from '../src/lib/voice.js';
+ok(toYemeni('ماذا تفعل الآن؟').includes('إيش'), 'استبدال «ماذا» بـ«إيش»');
+ok(toYemeni('لماذا؟').includes('ليش'), 'استبدال «لماذا» بـ«ليش»');
+ok(narrationForLesson(allPages.slice(0, 3)).length > 20, 'بناء نصّ الشرح من الصفحات');
+const vYe = pickArabicVoice([{ lang: 'en-US' }, { lang: 'ar-YE' }, { lang: 'ar-SA' }]);
+ok(vYe && vYe.lang === 'ar-YE', 'اختيار اللهجة اليمنية أولاً');
+const vSa = pickArabicVoice([{ lang: 'en-US' }, { lang: 'ar-SA' }]);
+ok(vSa && vSa.lang === 'ar-SA', 'الرجوع لأقرب لهجة عربية');
+ok(pickArabicVoice([{ lang: 'en-US' }]) === null, 'لا صوت عربي متاح');
+
+// --- محرّك الأسئلة والأجوبة ---
+import { askQuestion, suggestedQuestions } from '../src/lib/qnaEngine.js';
+const ansHit = askQuestion({ question: 'إيش معنى الحروف الهجائية؟', grade: 1, subjectId: 'arabic' });
+ok(ansHit.short && ansHit.short.length > 0, 'إجابة مختصرة موجودة');
+ok(ansHit.grounded === true, 'الإجابة مستندة إلى الكتاب');
+const ansMiss = askQuestion({ question: 'xyzabc nonsensical', grade: 1, subjectId: 'arabic' });
+ok(ansMiss.needsTeacher === true, 'سؤال غير معروف يُحوّل للمعلم');
+ok(suggestedQuestions('المعادلات').length === 4, 'أربعة أسئلة مقترحة');
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

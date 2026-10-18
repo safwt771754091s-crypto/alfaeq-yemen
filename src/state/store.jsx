@@ -24,7 +24,9 @@ const KEYS = {
   training: 'training',
   announcements: 'announcements',
   followups: 'followups',
-  games: 'games'
+  games: 'games',
+  companion: 'companion',
+  studyLog: 'studyLog'
 };
 
 const DEFAULT_PROFILE = {
@@ -93,6 +95,11 @@ export function AppProvider({ children }) {
   const announcements = useCollection(KEYS.announcements, logActivity, 'إعلان');
   const followups = useCollection(KEYS.followups, logActivity, 'متابعة');
   const games = useCollection(KEYS.games, logActivity, 'نتيجة لعبة');
+
+  // ===== رفيق الطالب (وضع الطالب) =====
+  const [companion, setCompanion] = usePersistent(KEYS.companion, { grade: 1, section: 'scientific', studentName: '', childMode: true });
+  const studyLog = useCollection(KEYS.studyLog, logActivity, 'تعلّم اليوم');
+  const saveCompanion = useCallback((p) => setCompanion((prev) => ({ ...prev, ...p })), [setCompanion]);
 
 
   // ===== الملف الشخصي =====
@@ -285,6 +292,7 @@ export function AppProvider({ children }) {
     certificates, addCertificate, deleteCertificate,
     activity, logActivity,
     library, designs, timetable, reminders, community, messages, training, announcements, followups, games,
+    companion, saveCompanion, studyLog,
     backup, restore, wipe
   }), [
     profile, saveProfile, classes, addClass, updateClass, deleteClass,
@@ -298,6 +306,7 @@ export function AppProvider({ children }) {
     certificates, addCertificate, deleteCertificate,
     activity, logActivity,
     library, designs, timetable, reminders, community, messages, training, announcements, followups, games,
+    companion, saveCompanion, studyLog,
     backup, restore, wipe
   ]);
 
