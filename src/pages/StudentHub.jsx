@@ -25,6 +25,7 @@ export default function StudentHub({ go }) {
   }, [studyLog.items]);
 
   const tiles = [
+    { id: 'voice', icon: '🎧', title: 'الدرس الصوتي', text: 'اسمع الشرح بصوت المعلمة وأجب على الأسئلة', tone: 'from-rose-400 to-rose-600' },
     { id: 'book', icon: '📖', title: 'الكتاب الرقمي', text: 'افتح أي درس بالاسم ورقم الصفحة', tone: 'from-sky-400 to-sky-600' },
     { id: 'books', icon: '📚', title: 'مكتبة الكتب', text: '٢٧٤ كتاباً من المنهج بروابط تحميل', tone: 'from-teal-400 to-teal-600' },
     { id: 'ask', icon: '❓', title: 'اسأل الآن', text: 'سؤال وجواب سريع مع شرح مبسّط', tone: 'from-violet-400 to-violet-600' },

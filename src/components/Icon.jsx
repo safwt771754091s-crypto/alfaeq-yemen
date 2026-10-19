@@ -74,7 +74,12 @@ export const Icon = {
   Heart: (p) => <Svg {...p}><path d="M12 20s-7-4.5-7-9.5A4 4 0 0 1 12 7a4 4 0 0 1 7 3.5C19 15.5 12 20 12 20z" /></Svg>,
   ListChecks: (p) => <Svg {...p}><path d="M4 6h1.5M4 12h1.5M4 18h1.5" /><path d="M9 6h11M9 12h11M9 18h11" /></Svg>,
   Grid: (p) => <Svg {...p}><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></Svg>,
-  Play: (p) => <Svg {...p}><path d="M7 4l13 8-13 8z" /></Svg>
+  Play: (p) => <Svg {...p}><path d="M7 4l13 8-13 8z" /></Svg>,
+  Mic: (p) => <Svg {...p}><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0" /><path d="M12 18v3" /><path d="M8 21h8" /></Svg>,
+  Stop: (p) => <Svg {...p}><rect x="6" y="6" width="12" height="12" rx="2" /></Svg>,
+  Speaker: (p) => <Svg {...p}><path d="M4 9v6h4l5 4V5L8 9z" /><path d="M16.5 8.5a5 5 0 0 1 0 7" /><path d="M19 6a8 8 0 0 1 0 12" /></Svg>,
+  Bot: (p) => <Svg {...p}><rect x="4" y="8" width="16" height="11" rx="3" /><path d="M12 8V4" /><circle cx="9" cy="13.5" r="1.2" /><circle cx="15" cy="13.5" r="1.2" /><path d="M2 12v3M22 12v3" /></Svg>,
+  Volume: (p) => <Svg {...p}><path d="M11 5 6 9H3v6h3l5 4z" /><path d="M16 9a4 4 0 0 1 0 6" /></Svg>
 };
 
 export default Icon;

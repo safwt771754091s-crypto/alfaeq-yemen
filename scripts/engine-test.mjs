@@ -241,6 +241,11 @@ ok(adenMath7.every((b) => b.authority === 'aden'), 'authorityBooks تُرجع ج
 import { segmentLessons, extractQuestions, tidyHeading, stripPageNo } from '../src/lib/textbookSegmenter.js';
 import { buildUnits, bookIdFor } from '../src/lib/importer.js';
 import { normalizeArabic as normAr, looksReadable } from '../src/lib/pdfExtract.js';
+import { buildSSML, VOICE_PROFILES, voiceProfileFor, rateForGrade } from '../src/lib/voice.js';
+import {
+  buildVoiceLesson, evaluateAnswer, keywordsFrom, stemArabic, feedbackSpeech,
+  agentReply, classifyIntent, summarizeSession, dialogSuggestions
+} from '../src/lib/voiceLessonEngine.js';
 
 ok(tidyHeading('الوحدة السابعة: مممم 60060000000') === 'الوحدة السابعة', 'تنظيف العنوان من ذيل الأرقام');
 ok(stripPageNo('٧ الوحدة الخامسة') === 'الوحدة الخامسة', 'إزالة رقم الصفحة من بداية السطر');
@@ -329,6 +334,54 @@ const idA = bookIdFor({ authority: 'aden', grade: 7, subject: 'الرياضيا�
 const idB = bookIdFor({ authority: 'aden', grade: 7, subject: 'الرياضيات', term: 'first', url: 'https://x/b.pdf' });
 ok(idA !== idB, 'معرّف الكتاب يفرّق بين الجزء الأول والثاني');
 ok(idA === bookIdFor({ authority: 'aden', grade: 7, subject: 'الرياضيات', term: 'first', url: 'https://x/a.pdf' }), 'معرّف الكتاب ثابت للرابط نفسه');
+
+// --- الدرس الصوتي التفاعلي: ملفّات الأصوات + SSML + التقييم + الحوار ---
+ok(Object.keys(VOICE_PROFILES).length >= 3, 'ملفّات صوتية للمعلمة والمعلم والوكيل');
+ok(voiceProfileFor('teacher_male').gender === 'male', 'ملفّ صوت المعلم');
+ok(voiceProfileFor('غير-موجود').id === 'teacher_female', 'افتراضي: صوت المعلمة');
+ok(rateForGrade(2) < rateForGrade(10), 'سرعة أبطأ للصفوف الصغيرة');
+ok(rateForGrade(10) <= 1.01 && rateForGrade(10) >= 0.99, 'سرعة كاملة للمرحلة الثانوية');
+const ssml = buildSSML('النباتات تحتاج ضوء الشمس. وهي تصنع غذاءها.', { profile: VOICE_PROFILES.teacher_female });
+ok(ssml.startsWith('<speak'), 'SSML يبدأ بوسم speak');
+ok(ssml.includes('xml:lang="ar-YE"'), 'SSML يحمل لغة عربية يمنية');
+ok(ssml.includes('<prosody'), 'SSML يضبط النبرة والسرعة');
+ok((ssml.match(/<break/g) || []).length >= 2, 'SSML يضيف توقّفات بعد الجمل');
+
+ok(stemArabic('النباتات') === 'نباتات', 'تجذير عربي: إزالة «ال» التعريف');
+ok(stemArabic('إجابَة') === 'اجابه', 'تجذير عربي: توحيد الهمزة والتاء');
+const kws = keywordsFrom('النباتات تصنع الغذاء من ضوء الشمس والماء.', 4);
+ok(kws.length >= 3, 'استخراج كلمات مفتاحية من الفقرة');
+ok(!kws.includes('من'), 'استبعاد الكلمات الوظيفية من المفاتيح');
+
+const vLesson = buildVoiceLesson({ grade: 4, subjectId: 'science', lesson: 'النباتات', subjectName: 'العلوم' });
+ok(vLesson.segments.length >= 2, 'الدرس الصوتي مقسّم إلى فقرات (' + vLesson.segments.length + ')');
+ok(vLesson.segments.every((s) => s.narration && s.question && s.keywords.length), 'كل فقرة لها شرح وسؤال ومفاتيح');
+const vSeg = vLesson.segments[0];
+ok(evaluateAnswer(vSeg, vSeg.focus).correct === true, 'إجابة صحيحة عند ذكر كلمة السؤال المحورية');
+ok(evaluateAnswer(vSeg, vSeg.sampleAnswer).correct === true, 'إجابة صحيحة عند مطابقة نصّ الفقرة');
+ok(evaluateAnswer(vSeg, '').answered === false, 'لا إجابة فارغة');
+ok(evaluateAnswer(vSeg, 'بلا بلا بلا').correct === false, 'إجابة غير ذات صلة تُعدّ خاطئة');
+ok(feedbackSpeech({ correct: true, focus: 'ضوء' }).includes('صحيحة'), 'تغذية راجعة صوتية عند الصواب');
+ok(feedbackSpeech({ correct: false, missed: ['ضوء', 'ماء'] }).length > 0, 'تغذية راجعة صوتية عند الخطأ');
+
+ok(classifyIntent('وضّح لي أكثر') === 'clarify', 'تصنيف نيّة طلب التوضيح');
+ok(classifyIntent('لماذا نحتاج الضوء؟') === 'question', 'تصنيف نيّة السؤال');
+ok(classifyIntent('ضوء الشمس') === 'answer', 'تصنيف نيّة الإجابة');
+ok(classifyIntent('') === 'silence', 'تصنيف الصمت (انتهاء المهلة)');
+ok(dialogSuggestions('النباتات').length >= 3, 'اقتراحات حوار سريعة');
+
+const agentRes = agentReply({ question: 'ما هو النبات؟', grade: 4, subjectId: 'science' });
+ok(typeof agentRes.spoken === 'string' && agentRes.spoken.length > 0, 'ردّ الوكيل يحمل نصّاً منطوقاً');
+ok(agentRes.from === 'agent', 'ردّ الوكيل منسوب للوكيل');
+
+const vSummary = summarizeSession({
+  attempts: [{ evaluated: true, correct: true, focus: 'ضوء' }, { evaluated: true, correct: true, focus: 'ماء' }, { evaluated: true, correct: false, focus: 'تربة' }],
+  dialog: [{ role: 'student', text: 'س' }, { role: 'agent', text: 'ج' }]
+});
+ok(vSummary.total === 3 && vSummary.correct === 2, 'ملخّص الجلسة يحسب الصحيح');
+ok(vSummary.percent === 67, 'نسبة الفهم في الملخّص (' + vSummary.percent + ')');
+ok(vSummary.asked === 2, 'عدد أسئلة الحوار في الملخّص');
+ok(vSummary.needsWork.includes('تربة'), 'الملخّص يرصد الفقرة التي تحتاج مراجعة');
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
