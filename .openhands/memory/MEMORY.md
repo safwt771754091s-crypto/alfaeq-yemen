@@ -183,6 +183,18 @@ unauthenticated users), and the React dashboard is the app.
   StudentPortal (`voice`) and a tile in StudentHub; NAV id `voicelesson`; permission
   added in `auth.jsx`.
 - Icons added to `Icon.jsx`: Mic, Stop, Speaker, Bot, Volume.
+- **`src/lib/voiceProvider.js` (cloud layer, session 17b)** — `speakSmart()` picks
+  Azure/Google TTS when online + key present, else the device engine, and **auto-falls
+  back to local on any cloud error**. Config in LocalStorage `smart_teacher_v1:voiceConfig`
+  (`provider` auto|local|azure|google, `azureKey`, `azureRegion` default `westeurope`,
+  `googleKey`, optional `proxyUrl`, `voiceNames`). `buildCloudSSML` emits Azure
+  `<voice name>` (default Yemeni voice **`ar-YE-SalmaNeural`**) / Google `ar-XA`
+  prosody+breaks. `resolveProvider(cfg, online)` is pure/testable. Settings page has a
+  «صوت الشرح (TTS)» card (provider, keys, region, proxy, test button). The VoiceLesson
+  toolbar shows the active-provider chip. Azure supports CORS (browser-safe); Google
+  REST also allows browser keys. For wide public use prefer the `proxyUrl` so the key
+  stays server-side. Chromium headless has NO SpeechRecognition → ASR path untestable
+  headless (text fallback is the tested path).
 
 
 ## Content sources (see docs/CONTENT-SOURCES.md)

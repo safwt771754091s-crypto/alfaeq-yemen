@@ -5,9 +5,10 @@ import { useApp } from '../state/store.jsx';
 import { GRADES, gradeName, subjectsForGrade, SUBJECTS } from '../data/curriculum.js';
 import { buildBook } from '../lib/bookEngine.js';
 import {
-  speechSupported, asrSupported, pickArabicVoice, voiceProfileFor, rateForGrade,
-  speakText, stopSpeaking, createRecognizer, VOICE_PROFILES, toYemeni
+  speechSupported, asrSupported, voiceProfileFor, rateForGrade,
+  createRecognizer, VOICE_PROFILES, toYemeni
 } from '../lib/voice.js';
+import { speakSmart, stopSmart, loadVoiceConfig, resolveProvider } from '../lib/voiceProvider.js';
 import {
   buildVoiceLesson, evaluateAnswer, feedbackSpeech, agentReply, dialogSuggestions,
   summarizeSession
@@ -42,24 +43,26 @@ export default function VoiceLesson({ params = {} }) {
   const timerRef = useRef(null);
   const speakWarned = useRef(false);
   const voice = useMemo(() => voiceProfileFor(voiceId), [voiceId]);
+  const voiceCfg = useMemo(() => loadVoiceConfig(), []);
+  const [activeProvider, setActiveProvider] = useState(() => resolveProvider(loadVoiceConfig(), typeof navigator === 'undefined' ? true : navigator.onLine));
 
   useEffect(() => subscribeSessions(() => setHistory(getSessions())), []);
-  useEffect(() => () => { stopSpeaking(); recRef.current?.abort?.(); clearInterval(timerRef.current); }, []);
+  useEffect(() => () => { stopSmart(); recRef.current?.abort?.(); clearInterval(timerRef.current); }, []);
 
   const book = useMemo(() => buildBook({ grade, subjectId }), [grade, subjectId]);
   const lessons = useMemo(() => book.chapters.flatMap((c) => c.lessons.map((l) => l.title)), [book]);
   const current = lesson?.segments?.[segIndex] || null;
 
   const speakOut = (text, { onEnd, rate } = {}) => {
-    if (!speechSupported()) {
+    const supported = speechSupported() || resolveProvider(voiceCfg, true) !== 'local';
+    if (!supported) {
       if (!speakWarned.current) { toast.push('الجهاز لا يدعم النطق الصوتي — اقرأ النصّ المعروض'); speakWarned.current = true; }
       return;
     }
-    speakText(text, {
-      profile: voice,
-      rate: rate != null ? rate : rateForGrade(grade),
-      voice: pickArabicVoice(window.speechSynthesis.getVoices()),
-      onEnd
+    const r = rate != null ? rate : rateForGrade(grade);
+    speakSmart(text, { profileId: voiceId, rate: r, cfg: voiceCfg, onEnd }).then((res) => {
+      if (res.provider !== activeProvider) setActiveProvider(res.provider);
+      if (res.fellBack && !speakWarned.current) { toast.push('تعذّر الصوت السحابي — تم التحويل للمحرّك المحلي'); speakWarned.current = true; }
     });
   };
 
@@ -102,7 +105,7 @@ export default function VoiceLesson({ params = {} }) {
   // ===== الإجابة الصوتية =====
   const startListening = () => {
     if (!asrSupported()) { toast.push('التعرّف الصوتي غير مدعوم — استخدم الكتابة'); return; }
-    stopSpeaking();
+    stopSmart();
     setLiveTranscript('');
     setPhase('asking');
     const rec = createRecognizer({
@@ -144,7 +147,7 @@ export default function VoiceLesson({ params = {} }) {
   const askAgent = (text) => {
     const q = String(text || askDraft || '').trim();
     if (!q) return;
-    stopSpeaking();
+    stopSmart();
     const reply = agentReply({ question: q, grade, subjectId });
     const entry = { role: 'agent', text: reply.short, spoken: reply.spoken, grounded: reply.grounded, needsTeacher: reply.needsTeacher };
     setDialog((d) => [...d, { role: 'student', text: q }, entry]);
@@ -168,7 +171,7 @@ export default function VoiceLesson({ params = {} }) {
     endSession(session.id, summary);
     setSession((s) => ({ ...s, summary }));
     setPhase('idle');
-    stopSpeaking();
+    stopSmart();
     studyLog.add({
       title: `درس صوتي «${lessonTitle}»`,
       lesson: lessonTitle, subjectId,
@@ -220,10 +223,13 @@ export default function VoiceLesson({ params = {} }) {
         </div>
         <div className="flex flex-wrap items-center gap-2 mt-3">
           <button className="btn-primary" onClick={startLesson}><Icon.Play size={18} /> ابدأ الدرس الصوتي</button>
-          <button className="btn-outline" onClick={stopSpeaking}><Icon.Stop size={16} /> إيقاف الصوت</button>
+          <button className="btn-outline" onClick={stopSmart}><Icon.Stop size={16} /> إيقاف الصوت</button>
           {!speechSupported() && <span className="chip bg-amber-50 text-amber-700">تنبيه: جهازك لا يدعم النطق — سيظهر النص للقراءة</span>}
           {!asrSupported() && <span className="chip bg-slate-100 text-slate-600">الإجابة الصوتية غير متاحة — استخدم الكتابة</span>}
           <span className="chip bg-slate-100 text-slate-600 self-center">{voice.describe}</span>
+          <span className={`chip self-center ${activeProvider === 'local' ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-700'}`}>
+            <Icon.Speaker size={12} /> {activeProvider === 'local' ? 'صوت محلي (بدون إنترنت)' : (activeProvider === 'azure' ? 'صوت Azure الطبيعي' : 'صوت Google')}
+          </span>
         </div>
       </Card>
 

@@ -243,6 +243,9 @@ import { buildUnits, bookIdFor } from '../src/lib/importer.js';
 import { normalizeArabic as normAr, looksReadable } from '../src/lib/pdfExtract.js';
 import { buildSSML, VOICE_PROFILES, voiceProfileFor, rateForGrade } from '../src/lib/voice.js';
 import {
+  buildCloudSSML, resolveProvider, voiceNameFor, cloudConfigured, DEFAULT_VOICE_CONFIG, PROVIDER_LABELS
+} from '../src/lib/voiceProvider.js';
+import {
   buildVoiceLesson, evaluateAnswer, keywordsFrom, stemArabic, feedbackSpeech,
   agentReply, classifyIntent, summarizeSession, dialogSuggestions
 } from '../src/lib/voiceLessonEngine.js';
@@ -382,6 +385,38 @@ ok(vSummary.total === 3 && vSummary.correct === 2, 'ملخّص الجلسة يح
 ok(vSummary.percent === 67, 'نسبة الفهم في الملخّص (' + vSummary.percent + ')');
 ok(vSummary.asked === 2, 'عدد أسئلة الحوار في الملخّص');
 ok(vSummary.needsWork.includes('تربة'), 'الملخّص يرصد الفقرة التي تحتاج مراجعة');
+
+// --- طبقة مزوّد الصوت (voiceProvider): الاختيار التلقائي + SSML السحابي ---
+ok(DEFAULT_VOICE_CONFIG.provider === 'auto', 'المزوّد الافتراضي تلقائي');
+ok(Object.keys(PROVIDER_LABELS).length === 4, 'أربعة خيارات لمزوّد الصوت');
+const cfgLocal = { ...DEFAULT_VOICE_CONFIG, provider: 'local' };
+ok(resolveProvider(cfgLocal, true) === 'local', 'الاختيار اليدوي «محلي» يحترم دائماً');
+const cfgAutoNoKey = { ...DEFAULT_VOICE_CONFIG, provider: 'auto' };
+ok(resolveProvider(cfgAutoNoKey, true) === 'local', 'تلقائي بلا مفتاح → محلي');
+ok(resolveProvider(cfgAutoNoKey, false) === 'local', 'تلقائي دون إنترنت → محلي');
+const cfgAutoAzure = { ...DEFAULT_VOICE_CONFIG, provider: 'auto', azureKey: 'k' };
+ok(resolveProvider(cfgAutoAzure, true) === 'azure', 'تلقائي مع مفتاح Azure → Azure');
+ok(resolveProvider(cfgAutoAzure, false) === 'local', 'تلقائي مع مفتاح Azure دون إنترنت → محلي');
+const cfgAutoGoogle = { ...DEFAULT_VOICE_CONFIG, provider: 'auto', googleKey: 'g' };
+ok(resolveProvider(cfgAutoGoogle, true) === 'google', 'تلقائي مع مفتاح Google فقط → Google');
+const cfgForceAzureNoKey = { ...DEFAULT_VOICE_CONFIG, provider: 'azure' };
+ok(resolveProvider(cfgForceAzureNoKey, true) === 'local', 'فرض Azure بلا مفتاح يتراجع للمحلي');
+ok(cloudConfigured(cfgAutoAzure).azure === true, 'كشف جاهزية Azure');
+ok(cloudConfigured(cfgAutoNoKey).google === false, 'كشف عدم جاهزية Google');
+
+ok(voiceNameFor('azure', 'teacher_female') === 'ar-YE-SalmaNeural', 'صوت المعلمة اليمني الافتراضي على Azure');
+ok(voiceNameFor('azure', 'teacher_male').startsWith('ar-'), 'صوت المعلم الافتراضي على Azure');
+ok(voiceNameFor('google', 'teacher_female').startsWith('ar-XA'), 'صوت Google العربي الافتراضي');
+ok(voiceNameFor('azure', 'teacher_female', { teacher_female: 'custom-voice' }) === 'custom-voice', 'تجاوز اسم الصوت من الإعدادات');
+
+const azureSSML = buildCloudSSML('النباتات تحتاج ضوء الشمس. وهي تصنع غذاءها.', { provider: 'azure', voiceName: 'ar-YE-SalmaNeural', rate: 0.9 });
+ok(azureSSML.includes('<voice name="ar-YE-SalmaNeural">'), 'SSML Azure يحمل وسم voice بالاسم');
+ok(azureSSML.includes('xml:lang="ar-YE"'), 'SSML Azure بلغة يمنية');
+ok(azureSSML.includes('rate="-10%"'), 'SSML يحوّل السرعة 0.9 إلى -10%');
+ok((azureSSML.match(/<break/g) || []).length >= 2, 'SSML السحابي يضيف توقّفات');
+const googleSSML = buildCloudSSML('مرحباً. كيف حالك؟', { provider: 'google' });
+ok(googleSSML.includes('xml:lang="ar-XA"') && !googleSSML.includes('<voice'), 'SSML Google بلغة ar-XA وبلا وسم voice');
+ok(buildCloudSSML('نص <خطر> & رمز', { provider: 'azure', voiceName: 'v' }).includes('&lt;خطر&gt;'), 'تهريب محارف XML في SSML');
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

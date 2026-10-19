@@ -5,6 +5,7 @@ import { useApp } from '../state/store.jsx';
 import { useAuth, APP_VERSION } from '../state/auth.jsx';
 import { SUBJECTS } from '../data/curriculum.js';
 import { download } from '../lib/utils.js';
+import { loadVoiceConfig, saveVoiceConfig, PROVIDER_LABELS, testProvider, resolveProvider } from '../lib/voiceProvider.js';
 
 const REPO_URL = 'https://github.com/safwt771754091s-crypto/alfaeq-yemen';
 const APK_URL = `${REPO_URL}/releases/latest/download/smart-teacher.apk`;
@@ -21,9 +22,20 @@ export default function Settings() {
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [restoreOpen, setRestoreOpen] = useState(false);
   const [restoreText, setRestoreText] = useState('');
+  const [voiceCfg, setVoiceCfg] = useState(() => loadVoiceConfig());
+  const [testing, setTesting] = useState(false);
   const fileRef = useRef(null);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const setVC = (k, v) => setVoiceCfg((c) => ({ ...c, [k]: v }));
+  const saveVoice = () => { setVoiceCfg(saveVoiceConfig(voiceCfg)); toast.push('تم حفظ إعدادات الصوت'); };
+  const runVoiceTest = async () => {
+    setTesting(true);
+    const res = await testProvider(voiceCfg);
+    setTesting(false);
+    toast.push(res.ok ? `يعمل الصوت: ${PROVIDER_LABELS[res.provider] || res.provider}` : res.reason, res.ok ? 'success' : 'error');
+  };
 
   const save = () => { saveProfile(form); toast.push('تم حفظ الإعدادات'); };
 
@@ -167,6 +179,48 @@ export default function Settings() {
             </div>
           </Card>
           )}
+
+          <Card className="p-5">
+            <div className="section-title mb-4"><Icon.Speaker size={18} /> صوت الشرح (TTS) — جودة عالية</div>
+            <p className="text-sm text-slate-500 font-bold leading-relaxed mb-3">
+              اختر محرّك الصوت للدروس الصوتية. <b>تلقائي</b> يستخدم صوتاً سحابياً طبيعياً (صوت يمني) عند توفّر الإنترنت، ويعود للمحرّك المدمج بالجهاز عند انقطاعه.
+              المفتاح يُحفظ على جهازك فقط.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <label className="block">
+                <span className="text-xs font-extrabold text-slate-500">مزوّد الصوت</span>
+                <select className="input mt-1" value={voiceCfg.provider} onChange={(e) => setVC('provider', e.target.value)}>
+                  {Object.entries(PROVIDER_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+              </label>
+              <label className="block">
+                <span className="text-xs font-extrabold text-slate-500">منطقة Azure</span>
+                <input className="input mt-1" dir="ltr" value={voiceCfg.azureRegion} onChange={(e) => setVC('azureRegion', e.target.value)} placeholder="westeurope" />
+              </label>
+              <label className="block">
+                <span className="text-xs font-extrabold text-slate-500">مفتاح Azure Speech</span>
+                <input className="input mt-1" dir="ltr" type="password" value={voiceCfg.azureKey} onChange={(e) => setVC('azureKey', e.target.value)} placeholder="المفتاح السري" />
+              </label>
+              <label className="block">
+                <span className="text-xs font-extrabold text-slate-500">مفتاح Google Cloud TTS</span>
+                <input className="input mt-1" dir="ltr" type="password" value={voiceCfg.googleKey} onChange={(e) => setVC('googleKey', e.target.value)} placeholder="المفتاح السري" />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="text-xs font-extrabold text-slate-500">وسيط مخصّص (اختياري — بديل آمن عن المفتاح في المتصفح)</span>
+                <input className="input mt-1" dir="ltr" value={voiceCfg.proxyUrl} onChange={(e) => setVC('proxyUrl', e.target.value)} placeholder="https://your-proxy.example/tts" />
+              </label>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <button className="btn-primary" onClick={saveVoice}><Icon.Check size={18} /> حفظ إعدادات الصوت</button>
+              <button className="btn-outline" onClick={runVoiceTest} disabled={testing}><Icon.Play size={16} /> {testing ? 'جارٍ الاختبار...' : 'اختبار الصوت'}</button>
+              <span className="chip bg-slate-100 text-slate-600 self-center">
+                المزوّد النشط الآن: {PROVIDER_LABELS[resolveProvider(voiceCfg, typeof navigator === 'undefined' ? true : navigator.onLine)]}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 font-bold mt-2 leading-relaxed">
+              ملاحظة أمنية: وضع المفتاح في المتصفح مناسب للاستخدام الشخصي على جهاز المعلم. للاستخدام العام واسع النطاق، الأفضل استخدام «وسيط مخصّص» يحفظ المفتاح على الخادم.
+            </p>
+          </Card>
 
           <Card className="p-5">
             <div className="section-title mb-4"><Icon.Info size={18} /> حول المنصة</div>
