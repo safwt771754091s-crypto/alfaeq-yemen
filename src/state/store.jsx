@@ -263,6 +263,10 @@ export function AppProvider({ children }) {
     return item;
   }, [setCertificates]);
 
+  const updateCertificate = useCallback((id, patch) => {
+    setCertificates((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  }, [setCertificates]);
+
   const deleteCertificate = useCallback((id) => {
     setCertificates((prev) => prev.filter((c) => c.id !== id));
   }, [setCertificates]);
@@ -289,7 +293,7 @@ export function AppProvider({ children }) {
     quizzes, addQuiz, updateQuiz, deleteQuiz,
     assessments, addAssessment, updateAssessment, deleteAssessment, setScore,
     attendance, setAttendanceStatus, markAllAttendance,
-    certificates, addCertificate, deleteCertificate,
+    certificates, addCertificate, updateCertificate, deleteCertificate,
     activity, logActivity,
     library, designs, timetable, reminders, community, messages, training, announcements, followups, games,
     companion, saveCompanion, studyLog,
@@ -303,7 +307,7 @@ export function AppProvider({ children }) {
     quizzes, addQuiz, updateQuiz, deleteQuiz,
     assessments, addAssessment, updateAssessment, deleteAssessment, setScore,
     attendance, setAttendanceStatus, markAllAttendance,
-    certificates, addCertificate, deleteCertificate,
+    certificates, addCertificate, updateCertificate, deleteCertificate,
     activity, logActivity,
     library, designs, timetable, reminders, community, messages, training, announcements, followups, games,
     companion, saveCompanion, studyLog,

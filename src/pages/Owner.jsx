@@ -53,7 +53,7 @@ function PlatformStats() {
   );
 }
 
-export default function Owner() {
+export default function Owner({ go }) {
   const { owner, isOwner, users, currentUser, updateUser, changeOwnPin } = useAuth();
   const toast = useToast();
   const [info, setInfo] = useState({ name: owner?.name || '', email: owner?.email || '', phone: owner?.phone || '', school: owner?.school || '' });
@@ -62,6 +62,13 @@ export default function Owner() {
 
   // حماية: لا تُعرض بيانات المالك لغير المالك (دفاع في العمق حتى لو اختُرق التوجيه)
   if (!isOwner) return null;
+
+  const management = [
+    { id: 'controlcenter', name: 'مركز التحكم', icon: Icon.Grid, desc: 'إضافة/تعديل/دمج/حذف كل المحتوى', tone: 'from-brand-500 to-brand-700' },
+    { id: 'users', name: 'المستخدمون والصلاحيات', icon: Icon.Shield, desc: 'إدارة الحسابات والأدوار', tone: 'from-sky-500 to-sky-700' },
+    { id: 'sessions', name: 'الجلسات والنشاط', icon: Icon.Eye, desc: 'من سجّل ومن نشط وعلى أي صفحة', tone: 'from-violet-500 to-violet-700' },
+    { id: 'broadcast', name: 'الإرسال الجماعي', icon: Icon.Megaphone, desc: 'رسائل للمعلمين والطلاب', tone: 'from-amber-500 to-amber-600' }
+  ];
 
   const savePerms = (next) => {
     setPerms(next);
@@ -93,6 +100,18 @@ export default function Owner() {
       <OwnerCard owner={owner} />
 
       <PlatformStats />
+
+      {go && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {management.map((m) => (
+            <button key={m.id} onClick={() => go(m.id)} className={`text-right rounded-3xl p-5 text-white bg-gradient-to-br ${m.tone} shadow-soft hover:scale-[1.02] transition`}>
+              <m.icon size={26} />
+              <div className="font-extrabold mt-2">{m.name}</div>
+              <div className="text-white/90 text-xs font-bold mt-0.5 leading-relaxed">{m.desc}</div>
+            </button>
+          ))}
+        </div>
+      )}
 
       {isOwner ? (
         <div className="grid lg:grid-cols-2 gap-4">

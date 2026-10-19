@@ -418,5 +418,67 @@ const googleSSML = buildCloudSSML('مرحباً. كيف حالك؟', { provider:
 ok(googleSSML.includes('xml:lang="ar-XA"') && !googleSSML.includes('<voice'), 'SSML Google بلغة ar-XA وبلا وسم voice');
 ok(buildCloudSSML('نص <خطر> & رمز', { provider: 'azure', voiceName: 'v' }).includes('&lt;خطر&gt;'), 'تهريب محارف XML في SSML');
 
+// ================= إدارة الحسابات والجلسات والتحقق ومركز التحكم =================
+// (هذه الوحدات تعتمد على localStorage — نُوفّر بديلاً بسيطاً في node)
+import { detectTargetKind, normalizePhone, whatsappNumber, otpMessage, isEmail, isPhone, genOtp } from '../src/lib/verification.js';
+import { findDuplicates, mergeRows, naturalKey, audienceMatches, ENTITIES, entityByKey } from '../src/lib/controlCenter.js';
+import { findUserBy, ROLE_PERMISSION_PRESETS, DEFAULT_STUDENT_PERMISSIONS, ADMIN_ONLY_PERMISSIONS, ALL_PERMISSIONS } from '../src/lib/roles.js';
+
+// --- التحقق (البريد/الجوال/الرمز) ---
+ok(detectTargetKind('name@example.com') === 'email', 'كشف البريد الإلكتروني');
+ok(detectTargetKind('0771234567') === 'phone', 'كشف رقم الجوال المحلي');
+ok(detectTargetKind('967771234567') === 'phone', 'كشف رقم الجوال الدولي');
+ok(detectTargetKind('مرحبا') === 'invalid', 'رفض معرّف غير صالح');
+ok(isEmail('a@b.co') && !isEmail('a@b'), 'تحقق البريد صحيح');
+ok(isPhone('+967 783488 282'), 'تحقق الجوال مع رموز');
+ok(normalizePhone('+967 783 488 282') === '+967783488282', 'تطبيع رقم الجوال');
+ok(whatsappNumber('0771234567') === '967771234567', 'تحويل الرقم المحلي إلى صيغة واتساب اليمنية');
+ok(whatsappNumber('+967771234567') === '967771234567', 'صيغة واتساب من رقم دولي');
+ok(/^\d{6}$/.test(genOtp()), 'توليد رمز تحقق من 6 أرقام');
+ok(otpMessage('123456').includes('123456') && otpMessage('123456').includes('منصة المعلم الذكية'), 'نص رسالة الرمز يحوي الرمز واسم المنصة');
+
+// --- أدوار وصلاحيات ---
+ok(ROLE_PERMISSION_PRESETS.student.includes('studenthub'), 'صلاحيات الطالب تشمل وضع الطالب');
+ok(!ROLE_PERMISSION_PRESETS.student.includes('controlcenter'), 'الطالب لا يملك مركز التحكم');
+ok(!DEFAULT_STUDENT_PERMISSIONS.includes('users'), 'الطالب لا يدير المستخدمين');
+ok(ADMIN_ONLY_PERMISSIONS.every((p) => !ROLE_PERMISSION_PRESETS.teacher.includes(p)), 'المعلم لا يملك صلاحيات الإدارة');
+ok(ROLE_PERMISSION_PRESETS.admin.length === ALL_PERMISSIONS.length, 'المدير يملك كل الصلاحيات');
+
+// --- مطابقة المستخدم بالبريد/الجوال ---
+const sampleUsers = [
+  { id: 'u1', name: 'أحمد', username: 'ahmed', email: 'a@x.com', phone: '0771112222' },
+  { id: 'u2', name: 'سارة', username: 'sara', email: 's@x.com', phone: '+967733333333' }
+];
+ok(findUserBy(sampleUsers, 'ahmed')?.id === 'u1', 'الدخول باسم المستخدم');
+ok(findUserBy(sampleUsers, 'A@X.com')?.id === 'u1', 'الدخول بالبريد (غير حساس لحالة الأحرف)');
+ok(findUserBy(sampleUsers, '0771112222')?.id === 'u1', 'الدخول بالجوال المحلي');
+ok(findUserBy(sampleUsers, '967733333333')?.id === 'u2', 'الدخول بالجوال الدولي');
+ok(findUserBy(sampleUsers, 'لايوجد') === undefined, 'معرّف غير موجود');
+
+// --- كشف التكرار والدمج ---
+const dupRows = [
+  { id: 'a', title: 'درس المعادلات', subject: 'math', createdAt: 'x' },
+  { id: 'b', title: 'درس المعادلات ', subject: '', note: 'نسخة ثانية' },
+  { id: 'c', title: 'درس آخر', subject: 'science' }
+];
+ok(naturalKey('lessons', dupRows[0]) === naturalKey('lessons', dupRows[1]), 'مفتاح التطابق يتجاهل المسافات');
+const dups = findDuplicates('lessons', dupRows);
+ok(dups.length === 1 && dups[0].rows.length === 2, 'كشف مجموعة مكرّرة واحدة');
+const merged = mergeRows(dups[0].rows);
+ok(merged.subject === 'math', 'الدمج يحتفظ بالحقل غير الفارغ');
+ok(merged.note === 'نسخة ثانية', 'الدمج يُكمل الحقول الناقصة');
+ok(merged.id === 'a', 'الدمج يحتفظ بالصف الأساسي');
+ok(findDuplicates('lessons', [{ id: 'x', title: 'فريد' }]).length === 0, 'لا تكرار عند صف واحد');
+
+// --- الإرسال الجماعي ---
+ok(audienceMatches('all', 'student') && audienceMatches('all', 'teacher'), 'الجميع يستلم');
+ok(audienceMatches('students', 'student') && !audienceMatches('students', 'teacher'), 'الطلاب فقط');
+ok(audienceMatches('teachers', 'teacher') && !audienceMatches('teachers', 'student'), 'المعلمون فقط');
+
+// --- وصف أنواع المحتوى (مركز التحكم) ---
+ok(ENTITIES.length >= 18, 'مركز التحكم يغطي أنواع محتوى متعددة (' + ENTITIES.length + ')');
+ok(entityByKey('classes')?.label === 'الصفوف', 'وصف نوع الصفوف');
+ok(ENTITIES.every((e) => typeof e.title === 'function' && Array.isArray(e.fields)), 'كل نوع له دالة عنوان وحقول');
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

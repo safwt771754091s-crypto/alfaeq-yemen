@@ -42,6 +42,11 @@ import Importer from './pages/Importer.jsx';
 import VoiceLesson from './pages/VoiceLesson.jsx';
 import StudentQuestions from './pages/StudentQuestions.jsx';
 import StudentPortal from './pages/StudentPortal.jsx';
+import ControlCenter from './pages/ControlCenter.jsx';
+import Sessions from './pages/Sessions.jsx';
+import Broadcast from './pages/Broadcast.jsx';
+import TeacherDashboard from './pages/TeacherDashboard.jsx';
+import StudentDashboard from './pages/StudentDashboard.jsx';
 
 const NAV = [
   { id: 'dashboard', name: 'لوحة التحكم', icon: Icon.Home, group: 'عام' },
@@ -84,6 +89,9 @@ const NAV = [
 
   { id: 'classes', name: 'الصفوف والطلاب', icon: Icon.Users, group: 'الإعداد' },
   { id: 'users', name: 'المستخدمون والصلاحيات', icon: Icon.Shield, group: 'الإعداد' },
+  { id: 'controlcenter', name: 'مركز التحكم', icon: Icon.Grid, group: 'الإدارة' },
+  { id: 'sessions', name: 'الجلسات والنشاط', icon: Icon.Eye, group: 'الإدارة' },
+  { id: 'broadcast', name: 'الإرسال الجماعي', icon: Icon.Megaphone, group: 'الإدارة' },
   { id: 'owner', name: 'حساب المالك', icon: Icon.Crown, group: 'الإعداد' },
   { id: 'settings', name: 'الإعدادات', icon: Icon.Settings, group: 'الإعداد' }
 ];
@@ -124,7 +132,10 @@ const PAGES = {
   studentpractice: StudentPractice,
   studentbooks: StudentBooks,
   voicelesson: VoiceLesson,
-  importer: Importer
+  importer: Importer,
+  controlcenter: ControlCenter,
+  sessions: Sessions,
+  broadcast: Broadcast
 };
 
 function useOnline() {
@@ -161,7 +172,7 @@ function AccessDenied({ title, message, onLogout }) {
 
 export default function App() {
   const { profile, logActivity } = useApp();
-  const { isAuthed, currentUser, isOwner, can, logout } = useAuth();
+  const { isAuthed, currentUser, isOwner, can, logout, trackPage } = useAuth();
   const [route, setRoute] = useState('dashboard');
   const [routeParams, setRouteParams] = useState({});
   const [menuOpen, setMenuOpen] = useState(false);
@@ -186,6 +197,14 @@ export default function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  // تتبّع الصفحة الحالية في جلسة المستخدم (لمن نشط الآن وعلى أي صفحة).
+  // يجب أن يبقى قبل أي return مبكر لتبقى هوكات المكوّن ثابتة العدد بين العرضات.
+  useEffect(() => {
+    if (!isAuthed) return;
+    const name = NAV.find((n) => n.id === route)?.name || 'لوحة التحكم';
+    trackPage(route, name);
+  }, [route, isAuthed, trackPage]);
 
   // صفحة مستقلة عن الرئيسية، تُفتح على مسار خاص (#quiz) ولا تحتاج تسجيل دخول.
   if (hash === 'quiz') {
@@ -217,7 +236,12 @@ export default function App() {
   const visibleNav = NAV.filter((n) => (n.id === 'owner' ? isOwner : can(n.id)));
   const groups = [...new Set(visibleNav.map((n) => n.group))];
   const routeAllowed = (route === 'owner' ? isOwner : can(route)) || route === 'dashboard';
-  const Current = routeAllowed ? (PAGES[route] || Dashboard) : Dashboard;
+
+  // لوحة التحكم تتغيّر حسب الدور: مالك / معلم-مدير / طالب
+  const DashboardForRole = isOwner ? Dashboard : (currentUser?.role === 'student' ? StudentDashboard : TeacherDashboard);
+  const Current = route === 'dashboard'
+    ? DashboardForRole
+    : (routeAllowed ? (PAGES[route] || DashboardForRole) : DashboardForRole);
 
   const go = (id, params = {}) => {
     setRouteParams(params || {});

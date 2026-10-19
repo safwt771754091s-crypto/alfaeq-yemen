@@ -2,11 +2,8 @@ import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { Card, SectionHeader, Field, Modal, Confirm, useToast } from '../components/UI.jsx';
 import PermissionsEditor from '../components/PermissionsEditor.jsx';
-import { useAuth, ALL_PERMISSIONS, DEFAULT_TEACHER_PERMISSIONS, permissionLabel } from '../state/auth.jsx';
+import { useAuth, DEFAULT_TEACHER_PERMISSIONS, permissionLabel, ROLE_LABELS, ROLE_PERMISSION_PRESETS } from '../state/auth.jsx';
 import { formatDate } from '../lib/utils.js';
-
-const ROLE_LABELS = { owner: 'مالك المنصة', admin: 'مدير', teacher: 'معلم', viewer: 'مطّلع (قراءة فقط)' };
-const READONLY_PERMISSIONS = ['dashboard', 'curriculum', 'library', 'reports', 'activity', 'community', 'announcements', 'reminders', 'settings'];
 
 function UserForm({ open, onClose, editing }) {
   const { addUser, updateUser, setPin } = useAuth();
@@ -28,9 +25,7 @@ function UserForm({ open, onClose, editing }) {
 
   const applyRolePreset = (role) => {
     set('role', role);
-    if (role === 'admin') set('permissions', ALL_PERMISSIONS.slice());
-    else if (role === 'viewer') set('permissions', READONLY_PERMISSIONS.slice());
-    else if (role === 'teacher') set('permissions', DEFAULT_TEACHER_PERMISSIONS.slice());
+    set('permissions', (ROLE_PERMISSION_PRESETS[role] || DEFAULT_TEACHER_PERMISSIONS).slice());
   };
 
   const submit = (e) => {
@@ -83,7 +78,8 @@ function UserForm({ open, onClose, editing }) {
           </Field>
           <Field label="التخصص"><input className="input" value={f.subject} onChange={(e) => set('subject', e.target.value)} /></Field>
           <Field label="المدرسة"><input className="input" value={f.school} onChange={(e) => set('school', e.target.value)} /></Field>
-          <Field label="الهاتف"><input className="input" dir="ltr" value={f.phone} onChange={(e) => set('phone', e.target.value)} /></Field>
+          <Field label="البريد الإلكتروني"><input className="input" dir="ltr" value={f.email} onChange={(e) => set('email', e.target.value)} placeholder="name@example.com" /></Field>
+          <Field label="رقم الجوال"><input className="input" dir="ltr" value={f.phone} onChange={(e) => set('phone', e.target.value)} placeholder="7xxxxxxxx" /></Field>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
@@ -187,11 +183,17 @@ export default function Users() {
                   {u.fixed && <span className="chip bg-slate-100 text-slate-500">ثابت</span>}
                   {u.active === false && <span className="chip bg-rose-50 text-rose-600">موقوف</span>}
                   {u.id === currentUser.id && <span className="chip bg-emerald-50 text-emerald-700">أنت</span>}
+                  {(u.verified?.email || u.verified?.phone)
+                    ? <span className="chip bg-emerald-50 text-emerald-700"><Icon.UserCheck size={13} /> موثّق</span>
+                    : u.role !== 'owner' && <span className="chip bg-amber-50 text-amber-700">غير موثّق</span>}
                 </div>
                 <div className="text-xs text-slate-400 font-bold mt-0.5" dir="ltr">
-                  {u.username}{u.school ? ` • ${u.school}` : ''} • {u.createdAt ? formatDate(u.createdAt.slice(0, 10)) : ''}
+                  {u.username}{u.email ? ` • ${u.email}` : ''}{u.phone ? ` • ${u.phone}` : ''}
                 </div>
-                <div className="text-[11px] text-slate-400 font-bold">{u.role === 'owner' ? 'كل الصلاحيات' : `${(u.permissions || []).length} صلاحية`}</div>
+                <div className="text-[11px] text-slate-400 font-bold">
+                  {u.school ? `${u.school} • ` : ''}{u.createdAt ? formatDate(u.createdAt.slice(0, 10)) : ''} • {u.role === 'owner' ? 'كل الصلاحيات' : `${(u.permissions || []).length} صلاحية`}
+                  {u.loginCount ? ` • ${u.loginCount} دخول` : ''}
+                </div>
               </div>
               <div className="mr-auto flex items-center gap-1.5 flex-wrap">
                 <button className="btn-outline !px-3 !py-2 text-xs" onClick={() => setForm({ open: true, editing: u })}><Icon.Edit size={15} /> تعديل</button>

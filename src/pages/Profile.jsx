@@ -1,9 +1,62 @@
 import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { Card, SectionHeader, Field, StatCard, useToast } from '../components/UI.jsx';
+import OtpVerify from '../components/OtpVerify.jsx';
 import { useApp } from '../state/store.jsx';
 import { useAuth } from '../state/auth.jsx';
 import { SUBJECTS, gradeName } from '../data/curriculum.js';
+
+// بطاقة توثيق البريد والجوال عبر رمز تحقق
+function VerificationCard() {
+  const { currentUser, markVerified } = useAuth();
+  const [target, setTarget] = useState(null); // {kind, channel, value}
+  if (!currentUser || currentUser.role === 'owner') return null;
+  const emailOk = currentUser.verified?.email;
+  const phoneOk = currentUser.verified?.phone;
+
+  return (
+    <Card className="p-5 sm:p-6">
+      <SectionHeader icon={Icon.Shield} title="توثيق الحساب" subtitle="وثّق بريدك وجوالك لتفعيل الدخول عبر رمز التحقق" />
+      {!target ? (
+        <div className="grid sm:grid-cols-2 gap-3 mt-2">
+          <div className="rounded-2xl border border-slate-200 p-4">
+            <div className="flex items-center gap-2">
+              <Icon.Mail size={18} className="text-brand-700" />
+              <span className="font-extrabold text-slate-700">البريد الإلكتروني</span>
+              {emailOk ? <span className="chip bg-emerald-50 text-emerald-700 mr-auto">موثّق</span> : <span className="chip bg-amber-50 text-amber-700 mr-auto">غير موثّق</span>}
+            </div>
+            <div className="text-xs text-slate-400 font-bold mt-1" dir="ltr">{currentUser.email || 'لم يُضف بريد'}</div>
+            {!emailOk && currentUser.email && (
+              <button className="btn-outline w-full mt-3 !py-2 text-xs" onClick={() => setTarget({ kind: 'email', channel: 'email', value: currentUser.email })}>توثيق البريد</button>
+            )}
+          </div>
+          <div className="rounded-2xl border border-slate-200 p-4">
+            <div className="flex items-center gap-2">
+              <Icon.WhatsApp size={18} className="text-emerald-600" />
+              <span className="font-extrabold text-slate-700">رقم الجوال</span>
+              {phoneOk ? <span className="chip bg-emerald-50 text-emerald-700 mr-auto">موثّق</span> : <span className="chip bg-amber-50 text-amber-700 mr-auto">غير موثّق</span>}
+            </div>
+            <div className="text-xs text-slate-400 font-bold mt-1" dir="ltr">{currentUser.phone || 'لم يُضف جوال'}</div>
+            {!phoneOk && currentUser.phone && (
+              <button className="btn-outline w-full mt-3 !py-2 text-xs" onClick={() => setTarget({ kind: 'phone', channel: 'whatsapp', value: currentUser.phone })}>توثيق الجوال</button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-2">
+          <OtpVerify
+            scope={`verify:${currentUser.id}:${target.kind}`}
+            channel={target.channel}
+            target={target.value}
+            purpose={`توثيق ${target.kind === 'email' ? 'البريد' : 'الجوال'}`}
+            onVerified={() => { markVerified(currentUser.id, target.kind); setTarget(null); }}
+          />
+          <button className="btn-ghost w-full mt-2" onClick={() => setTarget(null)}>إلغاء</button>
+        </div>
+      )}
+    </Card>
+  );
+}
 
 export default function Profile() {
   const { profile, saveProfile, classes, students, lessons, presentations, assessments, certificates } = useApp();
@@ -65,6 +118,8 @@ export default function Profile() {
           <button className="btn-primary" onClick={save}><Icon.Check size={18} /> حفظ البيانات</button>
         </div>
       </Card>
+
+      <VerificationCard />
 
       {/* صفوفي */}
       {classes.length > 0 && (

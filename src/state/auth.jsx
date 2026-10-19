@@ -1,41 +1,24 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { loadKey, saveKey, hashPin, randomSalt, uid } from '../lib/storage.js';
+import { startSession, endSession, touchSession, pruneStale } from '../lib/sessionTrack.js';
+import { isEmail, isPhone } from '../lib/verification.js';
+import {
+  OWNER, PERMISSION_GROUPS, ALL_PERMISSIONS, ADMIN_ONLY_PERMISSIONS,
+  DEFAULT_TEACHER_PERMISSIONS, DEFAULT_STUDENT_PERMISSIONS,
+  ROLE_PERMISSION_PRESETS, ROLE_LABELS, findUserBy, permissionLabel
+} from '../lib/roles.js';
+
+export {
+  OWNER, PERMISSION_GROUPS, ALL_PERMISSIONS, ADMIN_ONLY_PERMISSIONS,
+  DEFAULT_TEACHER_PERMISSIONS, DEFAULT_STUDENT_PERMISSIONS,
+  ROLE_PERMISSION_PRESETS, ROLE_LABELS, findUserBy, permissionLabel
+};
 
 const AuthContext = createContext(null);
 
 const USERS_KEY = 'users';
 const SESSION_KEY = 'smart_teacher_v1:auth_session';
-export const APP_VERSION = '1.5';
-
-// ===== حساب المالك الثابت — موجود دائماً في المنصة ولا يمكن حذفه =====
-export const OWNER = {
-  id: 'owner',
-  login: 'safwt',
-  name: 'مالك المنصة',
-  role: 'owner',
-  roleLabel: 'مالك المنصة',
-  defaultPin: 'safwt',
-  email: 'Safwt771754091s@gmail.com',
-  phone: '+967 783488 282',
-  whatsapp: '967783488282',
-  location: 'اليمن — نخدم جميع المحافظات والمدن',
-  replyHours: 'يومياً من 9 صباحاً حتى 5 مساءً'
-};
-
-// ===== مجموعات الصلاحيات (مفتاح الصلاحية = معرّف الصفحة في التنقل) =====
-export const PERMISSION_GROUPS = [
-  { group: 'عام', items: [['dashboard', 'لوحة التحكم'], ['quiz', 'اختبر معرفتك بالمنصة'], ['profile', 'الملف الشخصي'], ['followups', 'المتابعة'], ['messages', 'الرسائل'], ['library', 'المكتبة'], ['training', 'التدريب'], ['design', 'استوديو التصميم']] },
-  { group: 'التخطيط', items: [['curriculum', 'المنهج اليمني'], ['planner', 'التحضير الذكي'], ['notebook', 'كراسة التحضير'], ['presentations', 'العروض التقديمية'], ['timetable', 'الجدول الدراسي']] },
-  { group: 'التقييم والسجلات', items: [['grader', 'التصحيح الذكي'], ['gradebook', 'سجل الدرجات'], ['attendance', 'الحضور والغياب'], ['certificates', 'الشهادات'], ['reports', 'التقارير'], ['activity', 'سجل النشاط']] },
-  { group: 'تواصل وأنشطة', items: [['community', 'المجتمع'], ['announcements', 'الإعلانات'], ['reminders', 'الإشعارات'], ['mathgames', 'ألعاب الرياضيات']] },
-  { group: 'رفيق الطالب', items: [['studenthub', 'وضع الطالب'], ['studentbook', 'الكتاب الرقمي'], ['studentask', 'اسأل الآن'], ['studenttimetable', 'جدول الطالب'], ['studentpractice', 'تدريب الطالب'], ['studentbooks', 'مكتبة الكتب'], ['voicelesson', 'الدرس الصوتي'], ['importer', 'استيراد الكتب'], ['studentquestions', 'أسئلة الطلاب']] },
-  { group: 'الإعداد', items: [['classes', 'الصفوف والطلاب'], ['users', 'المستخدمون والصلاحيات'], ['settings', 'الإعدادات']] }
-];
-
-export const ALL_PERMISSIONS = PERMISSION_GROUPS.flatMap((g) => g.items.map((i) => i[0]));
-
-// المعلم الجديد يحصل على كل الصلاحيات ما عدا إدارة المستخدمين
-export const DEFAULT_TEACHER_PERMISSIONS = ALL_PERMISSIONS.filter((p) => p !== 'users');
+export const APP_VERSION = '1.6';
 
 function seedOwner() {
   const salt = randomSalt();
@@ -55,6 +38,7 @@ function seedOwner() {
     permissions: ALL_PERMISSIONS.slice(),
     fixed: true,
     active: true,
+    verified: { email: true, phone: true },
     createdAt: new Date().toISOString()
   };
 }
@@ -70,12 +54,13 @@ export function AuthProvider({ children }) {
   const [users, setUsers] = useState(() => {
     const stored = loadKey(USERS_KEY, null);
     let list = Array.isArray(stored) ? stored : [];
-    // ضمان وجود حساب المالك الثابت دائماً
     if (!list.find((u) => u.id === 'owner')) list = [seedOwner(), ...list];
     else list = list.map((u) => (u.id === 'owner' ? { ...u, fixed: true, role: 'owner', name: OWNER.name } : u));
     return list;
   });
   const [userId, setUserId] = useState(readSession);
+  const [sessionId, setSessionId] = useState(null);
+  const startedRef = useRef(false);
 
   useEffect(() => { saveKey(USERS_KEY, users); }, [users]);
   useEffect(() => { writeSession(userId); }, [userId]);
@@ -83,44 +68,98 @@ export function AuthProvider({ children }) {
   const currentUser = users.find((u) => u.id === userId && u.active !== false) || null;
   const owner = users.find((u) => u.id === 'owner') || null;
 
-  const login = useCallback((username, pin) => {
-    const key = String(username || '').trim().toLowerCase();
-    const user = users.find((u) =>
-      (u.username || '').toLowerCase() === key || String(u.name || '').trim().toLowerCase() === key);
-    if (!user) return { ok: false, error: 'لا يوجد مستخدم بهذا الاسم' };
+  // بدء جلسة التتبّع عند وجود مستخدم مسجّل (مرة واحدة لكل تسجيل دخول)
+  useEffect(() => {
+    if (currentUser && !startedRef.current) {
+      startedRef.current = true;
+      pruneStale();
+      const s = startSession({
+        userId: currentUser.id, name: currentUser.name, username: currentUser.username,
+        role: currentUser.role, roleLabel: currentUser.roleLabel, method: currentUser.__method || 'pin'
+      });
+      setSessionId(s.id);
+      setUsers((prev) => prev.map((u) => (u.id === currentUser.id
+        ? { ...u, lastLoginAt: s.loginAt, loginCount: (u.loginCount || 0) + 1, __method: undefined }
+        : u)));
+    }
+    if (!currentUser && startedRef.current) {
+      startedRef.current = false;
+      setSessionId(null);
+    }
+  }, [currentUser]);
+
+  const finishLogin = useCallback((user, method) => {
+    setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, __method: method } : u)));
+    setUserId(user.id);
+  }, []);
+
+  const login = useCallback((identifier, pin) => {
+    const user = findUserBy(users, identifier);
+    if (!user) return { ok: false, error: 'لا يوجد حساب بهذا المعرّف' };
     if (user.active === false) return { ok: false, error: 'الحساب موقوف، راجع مالك المنصة' };
     if (hashPin(String(pin), user.salt) !== user.pinHash) return { ok: false, error: 'رمز الدخول غير صحيح' };
-    setUserId(user.id);
+    finishLogin(user, 'pin');
     return { ok: true, user };
+  }, [users, finishLogin]);
+
+  // دخول عبر رمز تحقق (OTP) مُتحقَّق منه مسبقاً
+  const loginWithOtp = useCallback((userIdOrIdentifier) => {
+    const user = users.find((u) => u.id === userIdOrIdentifier) || findUserBy(users, userIdOrIdentifier);
+    if (!user) return { ok: false, error: 'لا يوجد حساب مطابق' };
+    if (user.active === false) return { ok: false, error: 'الحساب موقوف، راجع مالك المنصة' };
+    finishLogin(user, 'otp');
+    return { ok: true, user };
+  }, [users, finishLogin]);
+
+  // يبحث عن مستخدم لطلب رمز تحقق للدخول
+  const findUserForLogin = useCallback((identifier) => {
+    const user = findUserBy(users, identifier);
+    if (!user) return { ok: false, error: 'لا يوجد حساب بهذا البريد أو الجوال' };
+    if (user.active === false) return { ok: false, error: 'الحساب موقوف، راجع مالك المنصة' };
+    const channel = isEmail(identifier) ? 'email' : (isPhone(identifier) ? 'whatsapp' : (user.email ? 'email' : 'whatsapp'));
+    const target = channel === 'email' ? user.email : (user.phone || identifier);
+    if (!target) return { ok: false, error: 'لا يوجد بريد أو جوال مسجّل لهذا الحساب' };
+    return { ok: true, user, channel, target };
   }, [users]);
 
-  const logout = useCallback(() => setUserId(null), []);
+  const logout = useCallback(() => {
+    if (sessionId) endSession(sessionId);
+    setSessionId(null);
+    setUserId(null);
+  }, [sessionId]);
+
+  // تسجيل صفحة التنقّل الحالية في الجلسة
+  const trackPage = useCallback((page, pageName) => {
+    if (sessionId) touchSession(sessionId, { page, pageName });
+  }, [sessionId]);
 
   const can = useCallback((perm) => {
     if (!currentUser) return false;
-    // صفحات الإدارة الأساسية تبقى متاحة دائماً للمالك حتى لا يُقفل نفسه
     if (currentUser.role === 'owner' && (perm === 'dashboard' || perm === 'owner' || perm === 'users')) return true;
     return (currentUser.permissions || []).includes(perm);
   }, [currentUser]);
 
   const addUser = useCallback((data, pin) => {
     const salt = randomSalt();
+    const role = data.role || 'teacher';
     const user = {
       id: uid('usr'),
       name: data.name || '',
       username: (data.username || '').trim(),
-      role: data.role || 'teacher',
-      roleLabel: data.roleLabel || 'معلم',
+      role,
+      roleLabel: data.roleLabel || ROLE_LABELS[role] || 'معلم',
       title: data.title || '',
       school: data.school || '',
       email: data.email || '',
       phone: data.phone || '',
       subject: data.subject || '',
+      grade: data.grade || '',
       salt,
-      pinHash: hashPin(String(pin), salt),
-      permissions: data.permissions ? data.permissions.slice() : DEFAULT_TEACHER_PERMISSIONS.slice(),
+      pinHash: pin ? hashPin(String(pin), salt) : '',
+      permissions: data.permissions ? data.permissions.slice() : (ROLE_PERMISSION_PRESETS[role] || DEFAULT_TEACHER_PERMISSIONS).slice(),
       fixed: false,
       active: true,
+      verified: data.verified || { email: false, phone: false },
       createdAt: new Date().toISOString()
     };
     setUsers((prev) => [...prev, user]);
@@ -128,10 +167,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   const registerTeacher = useCallback((data, pin) => {
-    const user = addUser({ ...data, role: 'teacher', roleLabel: 'معلم' }, pin);
-    setUserId(user.id);
+    const user = addUser({ ...data, role: 'teacher', roleLabel: ROLE_LABELS.teacher }, pin);
+    finishLogin(user, 'register');
     return user;
-  }, [addUser]);
+  }, [addUser, finishLogin]);
+
+  const registerStudent = useCallback((data, pin) => {
+    const user = addUser({ ...data, role: 'student', roleLabel: ROLE_LABELS.student }, pin);
+    finishLogin(user, 'register');
+    return user;
+  }, [addUser, finishLogin]);
 
   const updateUser = useCallback((id, patch) => {
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
@@ -155,10 +200,21 @@ export function AuthProvider({ children }) {
     return true;
   }, [currentUser, setPin]);
 
+  // توثيق البريد/الجوال للحساب (بعد نجاح رمز التحقق)
+  const markVerified = useCallback((id, kind) => {
+    setUsers((prev) => prev.map((u) => (u.id === id
+      ? { ...u, verified: { ...(u.verified || {}), [kind]: true } }
+      : u)));
+  }, []);
+
   const value = {
     users, currentUser, owner, isOwner: currentUser?.role === 'owner', isAuthed: !!currentUser,
-    login, logout, can, addUser, registerTeacher, updateUser, deleteUser, setPin, changeOwnPin,
-    APP_VERSION, PERMISSION_GROUPS, ALL_PERMISSIONS, DEFAULT_TEACHER_PERMISSIONS
+    isStudent: currentUser?.role === 'student',
+    isTeacher: currentUser?.role === 'teacher' || currentUser?.role === 'admin',
+    sessionId, login, loginWithOtp, findUserForLogin, logout, trackPage, can,
+    addUser, registerTeacher, registerStudent, updateUser, deleteUser, setPin, changeOwnPin, markVerified,
+    APP_VERSION, PERMISSION_GROUPS, ALL_PERMISSIONS, DEFAULT_TEACHER_PERMISSIONS, DEFAULT_STUDENT_PERMISSIONS,
+    ADMIN_ONLY_PERMISSIONS, ROLE_LABELS, ROLE_PERMISSION_PRESETS
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -169,10 +225,3 @@ export function useAuth() {
   return ctx;
 }
 
-export function permissionLabel(id) {
-  for (const g of PERMISSION_GROUPS) {
-    const found = g.items.find((i) => i[0] === id);
-    if (found) return found[1];
-  }
-  return id;
-}
