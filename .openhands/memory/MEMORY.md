@@ -15,8 +15,10 @@ cd /workspace/project && npm test        # node scripts/engine-test.mjs
 npm run build                            # vite build + PWA generateSW
 npm run preview -- --host 0.0.0.0 --port 12000   # live preview (already running)
 ```
-Baseline: **262 tests pass**, web + standalone build OK (PWA SW precache).
+Baseline: **348 tests pass**, web + standalone build OK (PWA SW precache).
 Live URL: https://work-1-cckulonssjrajkcv.prod-runtime.all-hands.dev/ (port 12000).
+Browser E2E harness: `e2e-admin.mjs` (puppeteer-core, chromium at `/usr/bin/chromium`,
+`--no-sandbox`) — **26/26** owner+student flows. Run `node e2e-admin.mjs` after build.
 
 ## Design language (user-directed)
 User wants the UI to look like the reference platform
@@ -55,18 +57,31 @@ unauthenticated users), and the React dashboard is the app.
 - `src/components/UI.jsx` — Card, SectionHeader, Field, Modal, EmptyState, StatCard,
   ProgressBar, useToast, Tabs, Confirm. `src/components/Icon.jsx` — inline SVG Icon map.
 
-## Pages / nav (App.jsx NAV + PAGES)
-الرئيسية، المنهج اليمني، التحضير الذكي، كراسة التحضير، العروض التقديمية،
-التصحيح الذكي، سجل الدرجات، الحضور والغياب، الشهادات، الصفوف والطلاب،
-حساب المالك، الإعدادات. Pages get { go, params }.
-
-## Pages (24, in NAV groups)
-عام: dashboard, followups, messages, library, training, design ·
+## Pages (39 in NAV, grouped)
+عام: dashboard, quiz, followups, messages, library, training, design, profile ·
 التخطيط: curriculum, planner, notebook, presentations, timetable ·
 التقييم: grader · السجلات: gradebook, attendance, certificates, reports, activity ·
 تواصل: community, announcements, reminders · أنشطة: mathgames ·
-الإعداد: classes, owner, settings. All in `src/pages/*.jsx`, registered in
-`PAGES`/`NAV` in App.jsx.
+رفيق الطالب: studenthub, studentbook, studentask, studenttimetable,
+studentquestions, studentpractice, studentbooks, voicelesson, importer ·
+الإعداد: classes, users, owner, settings · الإدارة: controlcenter, sessions, broadcast.
+All in `src/pages/*.jsx`, registered in `PAGES`/`NAV` in App.jsx. Pages get { go, params }.
+Role-gated nav: `NAV.filter((n) => n.id === 'owner' ? isOwner : can(n.id))`; dashboard is
+always allowed. Dashboard picks `Dashboard` (owner) / `StudentDashboard` / `TeacherDashboard`.
+
+## Admin & roles (added 2026-10-10 session 18)
+- `src/lib/roles.js` — pure: `OWNER`, `PERMISSION_GROUPS`, `ALL_PERMISSIONS`,
+  `ADMIN_ONLY_PERMISSIONS`, `DEFAULT_TEACHER/STUDENT_PERMISSIONS`,
+  `ROLE_PERMISSION_PRESETS`, `ROLE_LABELS` (owner/admin/teacher/viewer/student),
+  `findUserBy`, `permissionLabel`. `auth.jsx` imports + re-exports these.
+- `src/lib/controlCenter.js` — `ENTITIES` (per-type field descriptors) + `entityApi(app)`
+  (unified list/add/update/remove over `useApp()`), `findDuplicates`/`applyMerge`/`mergeRows`,
+  `AUDIENCES`/`audienceLabel`/`audienceMatches`.
+- `src/lib/sessionTrack.js` — LocalStorage session log (login/page/lastSeen) for Sessions.
+- `src/lib/verification.js` + `src/components/OtpVerify.jsx` — 6-digit OTP for email/WhatsApp
+  login + account verification (Profile card, `verified.{email,phone}` on the user).
+- Pages: `ControlCenter.jsx`, `Sessions.jsx`, `Broadcast.jsx`, `TeacherDashboard.jsx`,
+  `StudentDashboard.jsx`. Owner page has a 4-button management quick-links grid.
 
 ## Textbook importer («استيراد الكتب», added 2026-10-10)
 - `src/pages/Importer.jsx` — upload a curriculum PDF → browser extract (pdf.js) →
@@ -94,11 +109,24 @@ unauthenticated users), and the React dashboard is the app.
   `DOM.setFileInputFiles`, then read `localStorage importedUnits`.
 
 ## Conventions / gotchas
+- **React hooks must precede every early `return`** in `App.jsx`. A `useEffect` placed
+  after the `if (!isAuthed) return ...` / onboarding branches throws
+  "Rendered more hooks than during the previous render" the moment setup completes and
+  blanks the whole app. Keep all hooks at the top.
+- **`useApp()` collection API is `app.<name>.add/update/remove/items`**, not flat
+  `addX`. A page calling a non-existent `addAnnouncement` fails at runtime (unit tests
+  don't catch it). Grep the store before using a context key.
+- Guard null before calling entity accessors: `` confirm ? entity.title(confirm) : '' ``
+  (a `${entity.title(confirm) || ''}` still evaluates `entity.title(null)` first).
 - **Nav is an off-canvas drawer on the physical RIGHT** (closed by default; opened
   by the header hamburger, closed by the same button / X / overlay / Escape / route
   change). Content is full-width. In an `dir="rtl"` document, Tailwind logical
   utilities (`inset-inline-end`, `border-s`) map to the **left** — use physical
   `right-0` + `border-l` + `translate-x-full` for a right-side drawer.
+- E2E clicking: the drawer's `.nav-item`s stay in the DOM when closed, so `clickEl`
+  must **exclude `aside`** or it matches hidden nav; navigate via the drawer buttons
+  (`aria-label="القائمة"` / `"إغلاق القائمة"`). Fill modal fields scoped to `.fixed`.
+  Never `localStorage.clear()` between steps (it wipes `profile.setupDone`).
 - Print: `no-print` class hides controls; `print-area` removes card shadow.
 - Onboarding gate: App shows <Onboarding> until profile.setupDone.
 - After a rebuild, the browser may serve a stale SW — reload with a new ?v= query.
