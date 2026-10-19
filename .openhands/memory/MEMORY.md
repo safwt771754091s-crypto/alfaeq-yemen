@@ -162,6 +162,29 @@ unauthenticated users), and the React dashboard is the app.
   `voice.js` (Yemeni dialect + Web Speech), `qnaEngine.js` (grounded Q&A → teacher queue).
 - Teacher answers student questions in «أسئلة الطلاب» page; queue in localStorage `st.qna.queue.v1`.
 
+## Voice-interactive lesson («الدرس الصوتي التفاعلي», added 2026-10-10 session 17)
+- `src/lib/voiceLessonEngine.js` — pure/offline: `buildVoiceLesson` (segments the
+  lesson into 2-sentence paragraphs, one comprehension question each),
+  `evaluateAnswer` (keyword match + Arabic stemming), `feedbackSpeech`,
+  `agentReply` (delegates to `qnaEngine.askQuestion`), `classifyIntent`,
+  `summarizeSession` (percent/level/strengths/needsWork).
+- **Arabic stemming gotcha**: literal `includes()` misses «ال» prefixed forms.
+  `stemArabic()` strips diacritics + `ال`; matching is stem-based AND a hit on the
+  segment's `focus` word alone counts as correct.
+- `voice.js` gained: `VOICE_PROFILES` (teacher_female/teacher_male/agent),
+  `rateForGrade`, `buildSSML` (prosody+breaks; browsers don't consume SSML, so the
+  plain text is spoken), `speakText` (profile-aware), `asrSupported`/`createRecognizer`
+  (Web Speech `SpeechRecognition`; `ar-YE`).
+- `src/lib/voiceSession.js` — LocalStorage ns `smart_teacher_v1:voiceSessions`
+  (array; `openSession` reuses an unfinished session for the same lesson,
+  `recordAttempt`/`recordDialog`/`endSession`/`summarize`).
+- `src/pages/VoiceLesson.jsx` — start lesson → narrate → ask → answer (voice w/
+  8s timeout, or text fallback) → feedback → next → finish summary. Also a tab in
+  StudentPortal (`voice`) and a tile in StudentHub; NAV id `voicelesson`; permission
+  added in `auth.jsx`.
+- Icons added to `Icon.jsx`: Mic, Stop, Speaker, Bot, Volume.
+
+
 ## Content sources (see docs/CONTENT-SOURCES.md)
 - Richest source = the account's own repo **`safwt771754091s-crypto/Teacher-Safwat-`
   (Laravel, Apache-2.0)**: `backend/database/data/yemen_books_all.json` = 275 Yemeni
