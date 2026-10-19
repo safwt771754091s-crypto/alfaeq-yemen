@@ -69,6 +69,21 @@ All in `src/pages/*.jsx`, registered in `PAGES`/`NAV` in App.jsx. Pages get { go
 Role-gated nav: `NAV.filter((n) => n.id === 'owner' ? isOwner : can(n.id))`; dashboard is
 always allowed. Dashboard picks `Dashboard` (owner) / `StudentDashboard` / `TeacherDashboard`.
 
+## PWA / install (added 2026-10-10 session 20)
+- `vite-plugin-pwa` **injects `registerSW.js` and auto-registers by default** — even
+  on preview hosts. We set `injectRegister:false` and register manually in
+  `src/main.jsx` behind `canRegisterSW = PROD && !inIframe && !isDevHost`
+  (`isDevHost` = localhost/127.0.0.1/0.0.0.0 + `*.all-hands.dev` +
+  `*.prod-runtime.all-hands.dev`). SW registers **only on the published site**.
+- PWA icons must be **PNG** (SVG doesn't install on Android). Manifest uses
+  `pwa-192.png`, `pwa-512.png`, `pwa-maskable-512.png` (purpose maskable),
+  `apple-touch-icon.png` (180). Regenerate via `node scripts/generate-icons.mjs`
+  (Chromium render of `public/pwa-512.svg`; no Pillow/rsvg in the image).
+- Workbox: NetworkFirst pages, CacheFirst hashed `assets/*` + fonts/icons,
+  NetworkOnly for auth/OAuth paths + `navigateFallbackDenylist`.
+- Verify offline on the **live Pages site** (not preview): SW active + reload with
+  network disabled renders the app.
+
 ## Admin & roles (added 2026-10-10 session 18)
 - **`ensureOwner(users)`** (`roles.js`) — the owner is fixed and must always see
   every page. Stored `users[0].permissions` can be **older than the current page
