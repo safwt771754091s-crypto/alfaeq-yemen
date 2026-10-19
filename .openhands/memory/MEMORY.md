@@ -70,6 +70,11 @@ Role-gated nav: `NAV.filter((n) => n.id === 'owner' ? isOwner : can(n.id))`; das
 always allowed. Dashboard picks `Dashboard` (owner) / `StudentDashboard` / `TeacherDashboard`.
 
 ## Admin & roles (added 2026-10-10 session 18)
+- **`ensureOwner(users)`** (`roles.js`) — the owner is fixed and must always see
+  every page. Stored `users[0].permissions` can be **older than the current page
+  list**; `ensureOwner` re-grants ALL permissions once when `permsVersion <
+  PERMS_VERSION`, then respects later customization. **Bump `PERMS_VERSION`
+  whenever you add a page/permission**, or returning users won't see it.
 - `src/lib/roles.js` — pure: `OWNER`, `PERMISSION_GROUPS`, `ALL_PERMISSIONS`,
   `ADMIN_ONLY_PERMISSIONS`, `DEFAULT_TEACHER/STUDENT_PERMISSIONS`,
   `ROLE_PERMISSION_PRESETS`, `ROLE_LABELS` (owner/admin/teacher/viewer/student),
