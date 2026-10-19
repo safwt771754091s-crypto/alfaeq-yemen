@@ -5,13 +5,13 @@ import { isEmail, isPhone } from '../lib/verification.js';
 import {
   OWNER, PERMISSION_GROUPS, ALL_PERMISSIONS, ADMIN_ONLY_PERMISSIONS,
   DEFAULT_TEACHER_PERMISSIONS, DEFAULT_STUDENT_PERMISSIONS,
-  ROLE_PERMISSION_PRESETS, ROLE_LABELS, findUserBy, permissionLabel
+  ROLE_PERMISSION_PRESETS, ROLE_LABELS, PERMS_VERSION, ensureOwner, findUserBy, permissionLabel
 } from '../lib/roles.js';
 
 export {
   OWNER, PERMISSION_GROUPS, ALL_PERMISSIONS, ADMIN_ONLY_PERMISSIONS,
   DEFAULT_TEACHER_PERMISSIONS, DEFAULT_STUDENT_PERMISSIONS,
-  ROLE_PERMISSION_PRESETS, ROLE_LABELS, findUserBy, permissionLabel
+  ROLE_PERMISSION_PRESETS, ROLE_LABELS, PERMS_VERSION, ensureOwner, findUserBy, permissionLabel
 };
 
 const AuthContext = createContext(null);
@@ -36,6 +36,7 @@ function seedOwner() {
     salt,
     pinHash: hashPin(OWNER.defaultPin, salt),
     permissions: ALL_PERMISSIONS.slice(),
+    permsVersion: PERMS_VERSION,
     fixed: true,
     active: true,
     verified: { email: true, phone: true },
@@ -53,10 +54,9 @@ function writeSession(id) {
 export function AuthProvider({ children }) {
   const [users, setUsers] = useState(() => {
     const stored = loadKey(USERS_KEY, null);
-    let list = Array.isArray(stored) ? stored : [];
-    if (!list.find((u) => u.id === 'owner')) list = [seedOwner(), ...list];
-    else list = list.map((u) => (u.id === 'owner' ? { ...u, fixed: true, role: 'owner', name: OWNER.name } : u));
-    return list;
+    const list = Array.isArray(stored) ? stored : [];
+    // المالك ثابت: يُضاف إن غاب، وتُرقّى صلاحياته مرة واحدة عند إضافة صفحات جديدة.
+    return list.find((u) => u.id === 'owner') ? ensureOwner(list) : [seedOwner(), ...list];
   });
   const [userId, setUserId] = useState(readSession);
   const [sessionId, setSessionId] = useState(null);

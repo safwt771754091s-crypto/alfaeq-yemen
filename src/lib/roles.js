@@ -45,6 +45,22 @@ export const ROLE_PERMISSION_PRESETS = {
 
 export const ROLE_LABELS = { owner: 'مالك المنصة', admin: 'مدير', teacher: 'معلم', viewer: 'مطّلع (قراءة فقط)', student: 'طالب' };
 
+// نسخة قائمة الصلاحيات — تُزاد عند إضافة صفحات جديدة لترقية صلاحيات المالك.
+export const PERMS_VERSION = 2;
+
+// يُضمن وجود المالك دائماً مع كل الصلاحيات. يُرقّى مرة واحدة فقط عند تغيّر
+// PERMS_VERSION كي تظهر الصفحات المُضافة لحسابٍ أُنشئ قبلها، ثم يُحترم أي تخصيص لاحق.
+export function ensureOwner(users) {
+  const list = Array.isArray(users) ? users.slice() : [];
+  const idx = list.findIndex((u) => u.id === 'owner');
+  if (idx === -1) return list;
+  const u = list[idx];
+  list[idx] = u.permsVersion === PERMS_VERSION
+    ? { ...u, fixed: true, role: 'owner', name: OWNER.name }
+    : { ...u, fixed: true, role: 'owner', name: OWNER.name, permissions: ALL_PERMISSIONS.slice(), permsVersion: PERMS_VERSION };
+  return list;
+}
+
 // مطابقة المستخدم بمعرّف الدخول: اسم المستخدم، الاسم، البريد، أو الجوال
 export function findUserBy(users, identifier) {
   const raw = String(identifier || '').trim();

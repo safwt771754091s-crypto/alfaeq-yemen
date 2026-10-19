@@ -422,7 +422,7 @@ ok(buildCloudSSML('نص <خطر> & رمز', { provider: 'azure', voiceName: 'v' 
 // (هذه الوحدات تعتمد على localStorage — نُوفّر بديلاً بسيطاً في node)
 import { detectTargetKind, normalizePhone, whatsappNumber, otpMessage, isEmail, isPhone, genOtp } from '../src/lib/verification.js';
 import { findDuplicates, mergeRows, naturalKey, audienceMatches, ENTITIES, entityByKey } from '../src/lib/controlCenter.js';
-import { findUserBy, ROLE_PERMISSION_PRESETS, DEFAULT_STUDENT_PERMISSIONS, ADMIN_ONLY_PERMISSIONS, ALL_PERMISSIONS } from '../src/lib/roles.js';
+import { findUserBy, ROLE_PERMISSION_PRESETS, DEFAULT_STUDENT_PERMISSIONS, ADMIN_ONLY_PERMISSIONS, ALL_PERMISSIONS, PERMS_VERSION, ensureOwner } from '../src/lib/roles.js';
 
 // --- التحقق (البريد/الجوال/الرمز) ---
 ok(detectTargetKind('name@example.com') === 'email', 'كشف البريد الإلكتروني');
@@ -443,6 +443,20 @@ ok(!ROLE_PERMISSION_PRESETS.student.includes('controlcenter'), 'الطالب ل�
 ok(!DEFAULT_STUDENT_PERMISSIONS.includes('users'), 'الطالب لا يدير المستخدمين');
 ok(ADMIN_ONLY_PERMISSIONS.every((p) => !ROLE_PERMISSION_PRESETS.teacher.includes(p)), 'المعلم لا يملك صلاحيات الإدارة');
 ok(ROLE_PERMISSION_PRESETS.admin.length === ALL_PERMISSIONS.length, 'المدير يملك كل الصلاحيات');
+
+// --- ترقية صلاحيات المالك (إصلاح: صفحات الإدارة لا تظهر لحساب أُنشئ قبل وجودها) ---
+const oldOwner = { id: 'owner', username: 'safwt', role: 'owner', permissions: ['dashboard', 'users'], fixed: true };
+const migrated = ensureOwner([oldOwner, { id: 'u2', username: 'x', permissions: ['dashboard'] }]);
+ok(migrated[0].permissions.length === ALL_PERMISSIONS.length, 'المالك القديم يُرقّى لكل الصلاحيات');
+ok(migrated[0].permissions.includes('controlcenter') && migrated[0].permissions.includes('sessions') && migrated[0].permissions.includes('broadcast'), 'صفحات الإدارة تظهر بعد الترقية');
+ok(migrated[0].permsVersion === PERMS_VERSION, 'ترقيم إصدار الصلاحيات يُختم');
+ok(migrated[0].role === 'owner' && migrated[0].fixed === true, 'صفات المالك الثابتة محفوظة');
+ok(migrated[1].permissions.length === 1, 'لا تُمسّ صلاحيات غير المالك');
+// مُرقّى مسبقاً مع تخصيص مقصود → يُحترم التخصيص
+const custom = ensureOwner([{ id: 'owner', username: 'safwt', role: 'owner', permissions: ['dashboard', 'users', 'controlcenter'], permsVersion: PERMS_VERSION, fixed: true }]);
+ok(custom[0].permissions.length === 3 && !custom[0].permissions.includes('library'), 'التخصيص اللاحق للمالك يُحترم بعد الترقية');
+// لا مالك → لا تغيير
+ok(ensureOwner([{ id: 'u1' }]).length === 1, 'ensureOwner لا يضيف مالكاً إن غاب (يتولّاه المُهيّئ)');
 
 // --- مطابقة المستخدم بالبريد/الجوال ---
 const sampleUsers = [
